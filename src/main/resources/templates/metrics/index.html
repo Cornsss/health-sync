@@ -2,220 +2,317 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Health-Sync — 指标记录</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Health-Sync — 指标</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    :root {
+      --apple-gray-1: #f5f5f7;
+      --apple-gray-2: #e3e3e5;
+      --apple-gray-5: #86868b;
+      --apple-blue: #0071e3;
+      --apple-green: #34c759;
+      --apple-orange: #ff9500;
+      --apple-red: #ff3b30;
+      --apple-bg: #ffffff;
+      --apple-card: #ffffff;
+      --apple-text: #1d1d1f;
+      --apple-text-secondary: #86868b;
+      --apple-radius: 16px;
+      --apple-radius-lg: 20px;
+      --apple-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --apple-shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    * { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      background: var(--apple-gray-1);
+      color: var(--apple-text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .nav-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--apple-bg);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+      box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .nav-bottom a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      text-decoration: none;
+      color: var(--apple-text-secondary);
+      font-size: 10px;
+      transition: color 0.2s;
+    }
+    .nav-bottom a i { font-size: 22px; }
+    .nav-bottom a.active { color: var(--apple-blue); }
+
+    .header {
+      background: var(--apple-bg);
+      padding: 16px 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+
+    .card-apple {
+      background: var(--apple-card);
+      border-radius: var(--apple-radius);
+      box-shadow: var(--apple-shadow);
+      border: none;
+    }
+
+    .input-apple {
+      border-radius: 12px;
+      border: 1px solid var(--apple-gray-2);
+      padding: 14px 16px;
+      font-size: 16px;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: var(--apple-bg);
+    }
+    .input-apple:focus {
+      outline: none;
+      border-color: var(--apple-blue);
+      box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+    }
+    .input-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--apple-text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .btn-apple {
+      border-radius: 12px;
+      padding: 14px 24px;
+      font-weight: 600;
+      font-size: 16px;
+      border: none;
+      width: 100%;
+      transition: all 0.2s;
+    }
+    .btn-apple:active { transform: scale(0.97); }
+    .btn-apple-primary { background: var(--apple-blue); color: white; }
+    .btn-apple-primary:hover { background: #0077ed; }
+
+    .stat-big {
+      background: var(--apple-card);
+      border-radius: var(--apple-radius);
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-big-value { font-size: 36px; font-weight: 700; }
+    .stat-big-label { font-size: 13px; color: var(--apple-text-secondary); margin-top: 4px; }
+
+    .chart-card {
+      background: var(--apple-card);
+      border-radius: var(--apple-radius);
+      padding: 20px;
+    }
+    .chart-title { font-size: 17px; font-weight: 600; margin-bottom: 16px; }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--apple-gray-2);
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-date { font-size: 15px; font-weight: 500; }
+    .history-value { font-size: 17px; font-weight: 600; }
+    .history-badge {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+  </style>
 </head>
-<body class="bg-light">
-<div th:replace="~{fragments/nav :: navbar}"></div>
+<body>
+<div class="header">
+  <div class="header-title">健康指标</div>
+</div>
+
 <div th:replace="~{fragments/nav :: flash}"></div>
 
-<div class="container-fluid py-3 px-3">
-  <h5 class="fw-bold text-primary mb-3">&#128203; 健康指标记录</h5>
+<div style="padding: 0 20px;">
+  <div class="card-apple p-4 mt-4">
+    <div style="font-size: 17px; font-weight: 600; margin-bottom: 20px;">录入今日指标</div>
+    <form th:action="@{/metrics}" method="post" th:object="${form}">
+      <div class="mb-3">
+        <div class="input-label">日期</div>
+        <input type="date" th:field="*{recordedAt}" class="input-apple"/>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <div class="input-label">体重 (kg)</div>
+          <input type="number" step="0.1" th:field="*{weightKg}" placeholder="55.0" class="input-apple"/>
+        </div>
+        <div class="col-6">
+          <div class="input-label">体脂率 (%)</div>
+          <input type="number" step="0.1" th:field="*{bodyFatPct}" placeholder="20.0" class="input-apple"/>
+        </div>
+      </div>
+      <div class="mb-3">
+        <div class="input-label">备注</div>
+        <input type="text" th:field="*{note}" placeholder="今天感觉如何？" class="input-apple"/>
+      </div>
+      <button type="submit" class="btn-apple btn-apple-primary">
+        <i class="fas fa-check me-2"></i>保存指标
+      </button>
+    </form>
+  </div>
 
-  <!-- ── 录入表单 ──────────────────────────────────────────────── -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-primary text-white fw-bold" data-bs-toggle="collapse"
-         data-bs-target="#formCollapse" style="cursor:pointer">
-      &#43; 录入今日指标（点击展开）
+  <div class="row g-3 mt-3">
+    <div class="col-6">
+      <div class="stat-big">
+        <div class="stat-big-value" style="color: var(--apple-orange);" th:if="${latestWeight != null}" th:text="${latestWeight} + ' kg'">— kg</div>
+        <div class="stat-big-value" style="color: var(--apple-orange);" th:unless="${latestWeight != null}">—</div>
+        <div class="stat-big-label">最新体重</div>
+      </div>
     </div>
-    <div class="collapse show" id="formCollapse">
-      <div class="card-body">
-        <form th:action="@{/metrics}" method="post" th:object="${form}">
-          <div class="row g-3">
-            <div class="col-6 col-md-3">
-              <label class="form-label small fw-bold">日期</label>
-              <input type="date" th:field="*{recordedAt}" class="form-control form-control-sm"/>
-            </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label small fw-bold">体重 (kg)</label>
-              <input type="number" step="0.1" th:field="*{weightKg}"
-                     placeholder="55.0" class="form-control form-control-sm"/>
-            </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label small fw-bold">体脂率 (%)</label>
-              <input type="number" step="0.1" th:field="*{bodyFatPct}"
-                     placeholder="20.0" class="form-control form-control-sm"/>
-            </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label small fw-bold text-danger">尿酸 (μmol/L)</label>
-              <input type="number" th:field="*{uricAcid}"
-                     placeholder="420以下为正常" class="form-control form-control-sm"/>
-            </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label small fw-bold">ALT 谷丙 (U/L)</label>
-              <input type="number" step="0.1" th:field="*{alt}"
-                     placeholder="40以下" class="form-control form-control-sm"/>
-            </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label small fw-bold">AST 谷草 (U/L)</label>
-              <input type="number" step="0.1" th:field="*{ast}"
-                     class="form-control form-control-sm"/>
-            </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label small fw-bold text-warning">GGT (U/L)</label>
-              <input type="number" step="0.1" th:field="*{ggt}"
-                     placeholder="45以下" class="form-control form-control-sm"/>
-            </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label small fw-bold">肾结晶 (mm)</label>
-              <input type="number" step="0.1" th:field="*{kidneyCrystalMm}"
-                     class="form-control form-control-sm"/>
-            </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label small fw-bold">肌酐 (μmol/L)</label>
-              <input type="number" step="0.1" th:field="*{creatinine}"
-                     class="form-control form-control-sm"/>
-            </div>
-            <div class="col-12 col-md-9">
-              <label class="form-label small fw-bold">备注</label>
-              <input type="text" th:field="*{note}" class="form-control form-control-sm"/>
-            </div>
-            <div class="col-12">
-              <button type="submit" class="btn btn-primary">&#10003; 保存指标</button>
-            </div>
-          </div>
-        </form>
+    <div class="col-6">
+      <div class="stat-big">
+        <div class="stat-big-value" style="color: var(--apple-green);" th:if="${latestFat != null}" th:text="${latestFat} + ' %'">— %</div>
+        <div class="stat-big-value" style="color: var(--apple-green);" th:unless="${latestFat != null}">—</div>
+        <div class="stat-big-label">最新体脂</div>
       </div>
     </div>
   </div>
 
-  <!-- ── 指标参考值说明 ─────────────────────────────────────────── -->
-  <div class="alert alert-info small mb-4">
-    <strong>参考值：</strong>
-    尿酸 &lt;420 μmol/L ｜ ALT &lt;40 U/L ｜ GGT &lt;45 U/L ｜ 体重目标 55 kg ｜ 体脂 ≤20%
+  <div class="chart-card mt-4">
+    <div class="chart-title">体重趋势</div>
+    <canvas id="weightChart" height="200"></canvas>
   </div>
 
-  <!-- ── 趋势图 ────────────────────────────────────────────────── -->
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-header bg-white fw-bold">尿酸趋势</div>
-        <div class="card-body"><canvas id="uricChart" height="140"></canvas></div>
-      </div>
-    </div>
-    <div class="col-12 col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-header bg-white fw-bold">体重趋势</div>
-        <div class="card-body"><canvas id="weightChart" height="140"></canvas></div>
-      </div>
-    </div>
-    <div class="col-12">
-      <div class="card shadow-sm">
-        <div class="card-header bg-white fw-bold">肝酶趋势（ALT / GGT）</div>
-        <div class="card-body"><canvas id="liverChart" height="100"></canvas></div>
-      </div>
-    </div>
+  <div class="chart-card mt-3">
+    <div class="chart-title">体脂率趋势</div>
+    <canvas id="fatChart" height="200"></canvas>
   </div>
 
-  <!-- ── 历史记录表 ─────────────────────────────────────────────── -->
-  <div class="card shadow-sm">
-    <div class="card-header bg-white fw-bold">历史记录（最近30条）</div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-sm table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>日期</th><th>体重</th><th>体脂%</th>
-              <th>尿酸</th><th>ALT</th><th>GGT</th>
-              <th>肾结晶</th><th>备注</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:if="${allMetrics.isEmpty()}">
-              <td colspan="8" class="text-center text-muted py-3">暂无记录</td>
-            </tr>
-            <tr th:each="m : ${allMetrics}">
-              <td th:text="${m.recordedAt}"></td>
-              <td th:text="${m.weightKg != null} ? ${m.weightKg} + 'kg' : '—'"></td>
-              <td th:text="${m.bodyFatPct != null} ? ${m.bodyFatPct} + '%' : '—'"></td>
-              <td>
-                <span th:if="${m.uricAcid != null}"
-                      th:classappend="${m.uricAcid > 420} ? 'text-danger fw-bold' : 'text-success'"
-                      th:text="${m.uricAcid}"></span>
-                <span th:unless="${m.uricAcid != null}">—</span>
-              </td>
-              <td>
-                <span th:if="${m.alt != null}"
-                      th:classappend="${m.alt.doubleValue() > 40} ? 'text-danger' : ''"
-                      th:text="${m.alt}"></span>
-                <span th:unless="${m.alt != null}">—</span>
-              </td>
-              <td>
-                <span th:if="${m.ggt != null}"
-                      th:classappend="${m.ggt.doubleValue() > 45} ? 'text-warning fw-bold' : ''"
-                      th:text="${m.ggt}"></span>
-                <span th:unless="${m.ggt != null}">—</span>
-              </td>
-              <td th:text="${m.kidneyCrystalMm != null} ? ${m.kidneyCrystalMm} + 'mm' : '—'"></td>
-              <td><small th:text="${m.note}"></small></td>
-            </tr>
-          </tbody>
-        </table>
+  <div class="card-apple p-4 mt-4">
+    <div style="font-size: 17px; font-weight: 600; margin-bottom: 16px;">历史记录</div>
+    <div th:if="${allMetrics.isEmpty()}" style="text-align: center; color: var(--apple-text-secondary); padding: 40px;">
+      暂无记录，开始记录你的健康数据吧
+    </div>
+    <div th:unless="${allMetrics.isEmpty()}">
+      <div th:each="m : ${allMetrics}" class="history-item">
+        <div>
+          <div class="history-date" th:text="${m.recordedAt}">2024-01-01</div>
+          <div th:if="${m.note}" style="font-size: 13px; color: var(--apple-text-secondary);" th:text="${m.note}"></div>
+        </div>
+        <div class="text-end">
+          <div class="history-value" th:if="${m.weightKg != null}" th:text="${m.weightKg} + ' kg'"></div>
+          <div class="history-badge" style="background: rgba(52,199,89,0.12); color: var(--apple-green);" th:if="${m.bodyFatPct != null}" th:text="${m.bodyFatPct} + '%'"></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
+<div class="nav-bottom">
+  <a th:href="@{/}" th:classappend="${currentPage == 'dashboard'} ? 'active'">
+    <i class="fas fa-home"></i>
+    <span>首页</span>
+  </a>
+  <a th:href="@{/metrics}" th:classappend="${currentPage == 'metrics'} ? 'active'">
+    <i class="fas fa-chart-line"></i>
+    <span>指标</span>
+  </a>
+  <a th:href="@{/water}" th:classappend="${currentPage == 'water'} ? 'active'">
+    <i class="fas fa-tint"></i>
+    <span>饮水</span>
+  </a>
+  <a th:href="@{/exercise}" th:classappend="${currentPage == 'exercise'} ? 'active'">
+    <i class="fas fa-heartbeat"></i>
+    <span>运动</span>
+  </a>
+  <a th:href="@{/achievements}" th:classappend="${currentPage == 'achievements'} ? 'active'">
+    <i class="fas fa-trophy"></i>
+    <span>成就</span>
+  </a>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script th:inline="javascript">
-  const labels     = /*[[${chartLabels}]]*/ '[]';
-  const uricData   = /*[[${uricData}]]*/   '[]';
+  const labels = /*[[${chartLabels}]]*/ '[]';
   const weightData = /*[[${weightData}]]*/ '[]';
-  const ggtData    = /*[[${ggtData}]]*/    '[]';
-  const altData    = /*[[${altData}]]*/    '[]';
+  const fatData = /*[[${fatData}]]*/ '[]';
 
   const L = JSON.parse(labels);
-  const uric = JSON.parse(uricData);
-  const wt   = JSON.parse(weightData);
-  const ggt  = JSON.parse(ggtData);
-  const alt  = JSON.parse(altData);
+  const wt = JSON.parse(weightData);
+  const fat = JSON.parse(fatData);
 
-  const commonOptions = {
-    responsive: true,
-    plugins: { legend: { position: 'top' } },
-    scales: { y: { beginAtZero: false } }
-  };
+  const gradientGreen = document.getElementById('weightChart').getContext('2d').createLinearGradient(0,0,0,200);
+  gradientGreen.addColorStop(0, 'rgba(52,199,89,0.3)');
+  gradientGreen.addColorStop(1, 'rgba(52,199,89,0)');
 
-  // Uric acid chart with danger line
-  new Chart(document.getElementById('uricChart'), {
-    type: 'line',
-    data: {
-      labels: L,
-      datasets: [
-        { label: '尿酸 μmol/L', data: uric, borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,.1)', tension: .3, fill: true },
-        { label: '正常上限 420', data: Array(L.length).fill(420), borderColor: '#6c757d', borderDash: [5,5], pointRadius: 0 }
-      ]
-    },
-    options: commonOptions
-  });
+  const gradientOrange = document.getElementById('fatChart').getContext('2d').createLinearGradient(0,0,0,200);
+  gradientOrange.addColorStop(0, 'rgba(255,149,0,0.3)');
+  gradientOrange.addColorStop(1, 'rgba(255,149,0,0)');
 
-  // Weight chart with target line
   new Chart(document.getElementById('weightChart'), {
     type: 'line',
     data: {
       labels: L,
-      datasets: [
-        { label: '体重 kg', data: wt, borderColor: '#fd7e14', backgroundColor: 'rgba(253,126,20,.1)', tension: .3, fill: true },
-        { label: '目标 55kg', data: Array(L.length).fill(55), borderColor: '#6c757d', borderDash: [5,5], pointRadius: 0 }
-      ]
+      datasets: [{
+        label: '体重 kg',
+        data: wt,
+        borderColor: '#34c759',
+        backgroundColor: gradientGreen,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointBackgroundColor: '#34c759'
+      }]
     },
-    options: commonOptions
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: false, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
+      }
+    }
   });
 
-  // Liver chart
-  new Chart(document.getElementById('liverChart'), {
+  new Chart(document.getElementById('fatChart'), {
     type: 'line',
     data: {
       labels: L,
-      datasets: [
-        { label: 'ALT U/L', data: alt, borderColor: '#0d6efd', tension: .3 },
-        { label: 'GGT U/L', data: ggt, borderColor: '#ffc107', tension: .3 },
-        { label: 'ALT正常线 40', data: Array(L.length).fill(40), borderColor: '#6c757d', borderDash: [5,5], pointRadius: 0 }
-      ]
+      datasets: [{
+        label: '体脂率 %',
+        data: fat,
+        borderColor: '#ff9500',
+        backgroundColor: gradientOrange,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointBackgroundColor: '#ff9500'
+      }]
     },
-    options: commonOptions
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: false, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
+      }
+    }
   });
 </script>
 </body>

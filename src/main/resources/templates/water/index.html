@@ -2,143 +2,339 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Health-Sync — 饮水追踪</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Health-Sync — 饮水</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
   <style>
-    .water-circle {
-      width: 160px; height: 160px; border-radius: 50%;
-      border: 10px solid #e9ecef;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      margin: 0 auto; position: relative;
+    :root {
+      --apple-gray-1: #f5f5f7;
+      --apple-gray-2: #e3e3e5;
+      --apple-gray-5: #86868b;
+      --apple-blue: #0071e3;
+      --apple-green: #34c759;
+      --apple-cyan: #00c7d2;
+      --apple-orange: #ff9500;
+      --apple-red: #ff3b30;
+      --apple-bg: #ffffff;
+      --apple-card: #ffffff;
+      --apple-text: #1d1d1f;
+      --apple-text-secondary: #86868b;
+      --apple-radius: 16px;
+      --apple-radius-lg: 20px;
+      --apple-shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
-    .water-circle.reached { border-color: #0dcaf0; }
-    .wave-btn { width: 70px; height: 70px; border-radius: 50%; font-size: .85rem; }
+    * { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      background: var(--apple-gray-1);
+      color: var(--apple-text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .nav-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--apple-bg);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+      box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .nav-bottom a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      text-decoration: none;
+      color: var(--apple-text-secondary);
+      font-size: 10px;
+      transition: color 0.2s;
+    }
+    .nav-bottom a i { font-size: 22px; }
+    .nav-bottom a.active { color: var(--apple-cyan); }
+
+    .header {
+      background: var(--apple-bg);
+      padding: 16px 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+
+    .water-hero {
+      background: linear-gradient(180deg, rgba(0,199,210,0.15) 0%, transparent 100%);
+      border-radius: 0 0 var(--apple-radius-lg) var(--apple-radius-lg);
+      padding: 30px 20px 40px;
+      text-align: center;
+    }
+    .water-circle {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: white;
+      margin: 0 auto 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(0,199,210,0.2);
+      position: relative;
+    }
+    .water-circle::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 4px solid transparent;
+      border-top-color: var(--apple-cyan);
+      border-right-color: var(--apple-cyan);
+      animation: spin 2s linear infinite;
+    }
+    .water-circle.complete::before {
+      border-top-color: var(--apple-green);
+      border-right-color: var(--apple-green);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .water-value { font-size: 36px; font-weight: 700; color: var(--apple-cyan); }
+    .water-unit { font-size: 14px; color: var(--apple-text-secondary); }
+    .water-progress { font-size: 14px; color: var(--apple-text-secondary); margin-top: 8px; }
+    .water-complete-badge {
+      background: var(--apple-green);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-block;
+      margin-top: 12px;
+    }
+
+    .quick-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      border-radius: var(--apple-radius);
+      background: var(--apple-card);
+      box-shadow: var(--apple-shadow);
+      text-decoration: none;
+      color: var(--apple-text);
+      transition: transform 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .quick-btn:active { transform: scale(0.95); }
+    .quick-btn-value { font-size: 22px; font-weight: 600; color: var(--apple-cyan); }
+    .quick-btn-label { font-size: 12px; color: var(--apple-text-secondary); }
+
+    .card-apple {
+      background: var(--apple-card);
+      border-radius: var(--apple-radius);
+      box-shadow: var(--apple-shadow);
+      border: none;
+    }
+
+    .log-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--apple-gray-2);
+    }
+    .log-item:last-child { border-bottom: none; }
+    .log-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(0,199,210,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--apple-cyan);
+      font-size: 18px;
+    }
+    .log-value { font-size: 18px; font-weight: 600; }
+    .log-time { font-size: 13px; color: var(--apple-text-secondary); }
+
+    .input-apple {
+      border-radius: 12px;
+      border: 1px solid var(--apple-gray-2);
+      padding: 12px 16px;
+      font-size: 16px;
+      width: 100%;
+    }
+    .input-apple:focus {
+      outline: none;
+      border-color: var(--apple-cyan);
+      box-shadow: 0 0 0 3px rgba(0,199,210,0.15);
+    }
+    .btn-cyan {
+      background: var(--apple-cyan);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 16px;
+    }
   </style>
 </head>
-<body class="bg-light">
-<div th:replace="~{fragments/nav :: navbar}"></div>
+<body>
+<div class="header">
+  <div class="header-title">饮水追踪</div>
+</div>
+
 <div th:replace="~{fragments/nav :: flash}"></div>
 
-<div class="container-fluid py-3 px-3">
-  <h5 class="fw-bold text-info mb-3">&#128167; 饮水追踪</h5>
+<div class="water-hero">
+  <div class="water-circle" th:classappend="${progressPct >= 100} ? 'complete' : ''">
+    <div class="water-value" th:text="${todayTotal}">0</div>
+    <div class="water-unit">ml</div>
+  </div>
+  <div class="water-progress" th:text="'目标 ' + ${goalMl} + ' ml'">目标 2500 ml</div>
+  <div th:if="${progressPct >= 100}" class="water-complete-badge">
+    <i class="fas fa-check me-1"></i>今日目标达成
+  </div>
+  <div th:unless="${progressPct >= 100}" style="margin-top: 12px; color: var(--apple-text-secondary);" th:text="'还需 ' + (${goalMl} - ${todayTotal}) + ' ml'">
+    还需 0 ml
+  </div>
+</div>
 
-  <!-- ── 今日进度圆圈 ──────────────────────────────────────────── -->
-  <div class="text-center mb-4">
-    <div class="water-circle" th:classappend="${progressPct >= 100} ? 'reached' : ''">
-      <div class="fw-bold fs-4" style="color:#0dcaf0" th:text="${todayTotal} + ' ml'"></div>
-      <div class="text-muted small">今日饮水</div>
-      <div class="fw-bold" th:text="${progressPct} + '%'"></div>
-    </div>
-    <div class="mt-2">
-      <div class="progress mx-auto" style="max-width:280px;height:12px;border-radius:6px">
-        <div class="progress-bar bg-info"
-             th:style="'width:' + ${progressPct} + '%'"
-             th:text="${progressPct} + '%'"></div>
+<div style="padding: 20px;">
+  <div class="card-apple p-3 mb-4">
+    <div style="font-size: 15px; font-weight: 600; margin-bottom: 16px;">快速添加</div>
+    <div class="row g-3 mb-3">
+      <div class="col-3">
+        <form th:action="@{/water/add}" method="post">
+          <input type="hidden" name="amountMl" value="100"/>
+          <button type="submit" class="quick-btn w-100">
+            <div class="quick-btn-value">+100</div>
+            <div class="quick-btn-label">ml</div>
+          </button>
+        </form>
       </div>
-      <small class="text-muted" th:text="'目标 ' + ${goalMl} + ' ml'"></small>
-    </div>
-  </div>
-
-  <!-- ── 快速记录按钮 ──────────────────────────────────────────── -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-white fw-bold">&#43; 快速记录</div>
-    <div class="card-body">
-      <div class="row g-2 justify-content-center mb-3">
-        <div class="col-3 text-center">
-          <form th:action="@{/water/add}" method="post">
-            <input type="hidden" name="amountMl" value="100"/>
-            <button type="submit" class="btn btn-outline-info wave-btn">+100<br/><small>ml</small></button>
-          </form>
-        </div>
-        <div class="col-3 text-center">
-          <form th:action="@{/water/add}" method="post">
-            <input type="hidden" name="amountMl" value="200"/>
-            <button type="submit" class="btn btn-outline-info wave-btn">+200<br/><small>ml</small></button>
-          </form>
-        </div>
-        <div class="col-3 text-center">
-          <form th:action="@{/water/add}" method="post">
-            <input type="hidden" name="amountMl" value="350"/>
-            <button type="submit" class="btn btn-outline-info wave-btn">+350<br/><small>ml</small></button>
-          </form>
-        </div>
-        <div class="col-3 text-center">
-          <form th:action="@{/water/add}" method="post">
-            <input type="hidden" name="amountMl" value="500"/>
-            <button type="submit" class="btn btn-outline-info wave-btn">+500<br/><small>ml</small></button>
-          </form>
-        </div>
+      <div class="col-3">
+        <form th:action="@{/water/add}" method="post">
+          <input type="hidden" name="amountMl" value="200"/>
+          <button type="submit" class="quick-btn w-100">
+            <div class="quick-btn-value">+200</div>
+            <div class="quick-btn-label">ml</div>
+          </button>
+        </form>
       </div>
-      <!-- Custom amount -->
-      <form th:action="@{/water/add}" method="post" class="d-flex gap-2 justify-content-center">
-        <input type="number" name="amountMl" min="50" max="1000" step="50"
-               placeholder="自定义 ml" class="form-control" style="max-width:140px"/>
-        <button type="submit" class="btn btn-info text-white">记录</button>
-      </form>
+      <div class="col-3">
+        <form th:action="@{/water/add}" method="post">
+          <input type="hidden" name="amountMl" value="350"/>
+          <button type="submit" class="quick-btn w-100">
+            <div class="quick-btn-value">+350</div>
+            <div class="quick-btn-label">ml</div>
+          </button>
+        </form>
+      </div>
+      <div class="col-3">
+        <form th:action="@{/water/add}" method="post">
+          <input type="hidden" name="amountMl" value="500"/>
+          <button type="submit" class="quick-btn w-100">
+            <div class="quick-btn-value">+500</div>
+            <div class="quick-btn-label">ml</div>
+          </button>
+        </form>
+      </div>
     </div>
+    <form th:action="@{/water/add}" method="post" class="d-flex gap-2">
+      <input type="number" name="amountMl" min="50" max="2000" step="50" placeholder="自定义" class="input-apple"/>
+      <button type="submit" class="btn-cyan">添加</button>
+    </form>
   </div>
 
-  <!-- ── 本周趋势图 ────────────────────────────────────────────── -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-white fw-bold">本周饮水趋势</div>
-    <div class="card-body"><canvas id="waterChart" height="120"></canvas></div>
+  <div class="card-apple p-3 mb-4">
+    <div style="font-size: 15px; font-weight: 600; margin-bottom: 16px;">本周趋势</div>
+    <canvas id="waterChart" height="160"></canvas>
   </div>
 
-  <!-- ── 今日明细 ──────────────────────────────────────────────── -->
-  <div class="card shadow-sm">
-    <div class="card-header bg-white fw-bold">今日明细</div>
-    <div class="card-body p-0">
-      <div th:if="${todayLogs.isEmpty()}" class="text-center text-muted py-3">今日暂无记录，快来喝水吧！</div>
-      <ul class="list-group list-group-flush" th:unless="${todayLogs.isEmpty()}">
-        <li th:each="log : ${todayLogs}"
-            class="list-group-item d-flex justify-content-between align-items-center">
-          <span>
-            &#128167;
-            <strong th:text="${log.amountMl} + ' ml'"></strong>
-            <small class="text-muted ms-2" th:text="${#temporals.format(log.loggedAt, 'HH:mm')}"></small>
-          </span>
-          <span class="badge bg-secondary" th:text="${log.source}"></span>
-        </li>
-      </ul>
+  <div class="card-apple p-3">
+    <div style="font-size: 15px; font-weight: 600; margin-bottom: 16px;">今日记录</div>
+    <div th:if="${todayLogs.isEmpty()}" style="text-align: center; color: var(--apple-text-secondary); padding: 30px;">
+      暂无记录，开始喝水吧！
+    </div>
+    <div th:unless="${todayLogs.isEmpty()}">
+      <div th:each="log : ${todayLogs}" class="log-item">
+        <div class="d-flex align-items-center gap-3">
+          <div class="log-icon">💧</div>
+          <div>
+            <div class="log-value" th:text="${log.amountMl} + ' ml'">0 ml</div>
+            <div class="log-time" th:text="${#temporals.format(log.loggedAt, 'HH:mm')}">00:00</div>
+          </div>
+        </div>
+        <div style="font-size: 12px; color: var(--apple-text-secondary);" th:text="${log.source}"></div>
+      </div>
     </div>
   </div>
+</div>
+
+<div class="nav-bottom">
+  <a th:href="@{/}" th:classappend="${currentPage == 'dashboard'} ? 'active'">
+    <i class="fas fa-home"></i>
+    <span>首页</span>
+  </a>
+  <a th:href="@{/metrics}" th:classappend="${currentPage == 'metrics'} ? 'active'">
+    <i class="fas fa-chart-line"></i>
+    <span>指标</span>
+  </a>
+  <a th:href="@{/water}" th:classappend="${currentPage == 'water'} ? 'active'">
+    <i class="fas fa-tint"></i>
+    <span>饮水</span>
+  </a>
+  <a th:href="@{/exercise}" th:classappend="${currentPage == 'exercise'} ? 'active'">
+    <i class="fas fa-heartbeat"></i>
+    <span>运动</span>
+  </a>
+  <a th:href="@{/achievements}" th:classappend="${currentPage == 'achievements'} ? 'active'">
+    <i class="fas fa-trophy"></i>
+    <span>成就</span>
+  </a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script th:inline="javascript">
   const weekLabels = JSON.parse(/*[[${weekLabels}]]*/ '[]');
-  const weekData   = JSON.parse(/*[[${weekData}]]*/   '[]');
+  const weekData = JSON.parse(/*[[${weekData}]]*/ '[]');
 
-  new Chart(document.getElementById('waterChart'), {
-    type: 'bar',
+  const ctx = document.getElementById('waterChart').getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 160);
+  gradient.addColorStop(0, 'rgba(0,199,210,0.4)');
+  gradient.addColorStop(1, 'rgba(0,199,210,0)');
+
+  new Chart(ctx, {
+    type: 'line',
     data: {
       labels: weekLabels,
-      datasets: [
-        {
-          label: '饮水量 ml',
-          data: weekData,
-          backgroundColor: weekData.map(v => v >= 2500 ? 'rgba(13,202,240,.8)' : 'rgba(13,202,240,.4)'),
-          borderColor: 'rgba(13,202,240,1)',
-          borderWidth: 1
-        },
-        {
-          type: 'line',
-          label: '目标 2500ml',
-          data: Array(7).fill(2500),
-          borderColor: '#dc3545',
-          borderDash: [6, 3],
-          pointRadius: 0,
-          fill: false
-        }
-      ]
+      datasets: [{
+        label: '饮水量 ml',
+        data: weekData,
+        borderColor: '#00c7d2',
+        backgroundColor: gradient,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointBackgroundColor: '#00c7d2'
+      }]
     },
     options: {
       responsive: true,
-      plugins: { legend: { position: 'top' } },
-      scales: { y: { beginAtZero: true, max: 3500 } }
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
+      }
     }
   });
 </script>

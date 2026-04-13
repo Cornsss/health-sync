@@ -21,6 +21,9 @@ public class MealPlanItem {
     @Column(nullable = false)
     private BigDecimal amountG;
 
+    @Column(columnDefinition = "TEXT")
+    private String cookingMethod;
+
     public MealPlanItem() {}
 
     @Transient
@@ -46,4 +49,6 @@ public class MealPlanItem {
     public void setFood(FoodLibrary food) { this.food = food; }
     public BigDecimal getAmountG() { return amountG; }
     public void setAmountG(BigDecimal amountG) { this.amountG = amountG; }
+    public String getCookingMethod() { return cookingMethod; }
+    public void setCookingMethod(String cookingMethod) { this.cookingMethod = cookingMethod; }
 }

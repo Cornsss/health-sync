@@ -1,6 +1,7 @@
 package com.healthsync.controller;
 
 import com.healthsync.dto.DailyMealDTO;
+import com.healthsync.dto.GeneratedMealDTO;
 import com.healthsync.dto.UricAcidBudgetDTO;
 import com.healthsync.entity.MealRecord;
 import com.healthsync.repository.MealRecordRepository;
@@ -42,11 +43,22 @@ public class MealController {
         return "meals/index";
     }
 
+    @GetMapping("/library")
+    public String library(Model model) {
+        List<?> mealPlans = generatorService.getAllMealPlans();
+        model.addAttribute("mealPlans", mealPlans);
+        model.addAttribute("currentPage", "meals");
+        return "meals/library";
+    }
+
     @PostMapping("/generate")
     public String generate(RedirectAttributes attrs) {
         UricAcidBudgetDTO budget = budgetService.calculateDailyBudget(LocalDate.now());
         DailyMealDTO meal = generatorService.generateDailyMeal(budget.getTotalBudgetMg());
-        attrs.addFlashAttribute("generatedMeal", meal);
+        GeneratedMealDTO dto = generatorService.buildGeneratedMealDTO(
+                meal.getPlans(), meal.getTotalPurineMg(),
+                meal.getTotalCalories(), meal.getTotalFructoseG());
+        attrs.addFlashAttribute("generatedMeal", dto);
         attrs.addFlashAttribute("successMsg", "今日食谱已生成！嘌呤总量：" +
                 String.format("%.1f", meal.getTotalPurineMg()) + "mg");
         return "redirect:/meals";

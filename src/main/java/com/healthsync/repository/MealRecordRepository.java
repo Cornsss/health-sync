@@ -18,4 +18,6 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
 
     @Query("SELECT SUM(m.totalFructoseG) FROM MealRecord m WHERE m.recordedDate = :date")
     Optional<Double> sumFructoseByDate(@Param("date") LocalDate date);
+
+    void deleteByRecordedDate(LocalDate date);
 }

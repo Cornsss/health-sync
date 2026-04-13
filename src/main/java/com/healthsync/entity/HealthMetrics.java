@@ -16,14 +16,23 @@ public class HealthMetrics {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate recordedAt = LocalDate.now();
 
+    /** 体重 kg（目标 55kg）*/
     private BigDecimal weightKg;
+
+    /** 体脂率 %（智能体脂秤可测）*/
     private BigDecimal bodyFatPct;
+
+    /** 尿酸 μmol/L（正常 < 420，抽血检测）*/
     private Integer uricAcid;
+
+    /** 谷丙转氨酶 ALT U/L（正常 < 40，抽血检测）*/
     private BigDecimal alt;
+
+    /** 谷草转氨酶 AST U/L（抽血检测）*/
     private BigDecimal ast;
+
+    /** 谷氨酰转移酶 GGT U/L（脂肪肝敏感，正常 < 45，抽血检测）*/
     private BigDecimal ggt;
-    private BigDecimal kidneyCrystalMm;
-    private BigDecimal creatinine;
 
     @Column(columnDefinition = "TEXT")
     private String note;
@@ -46,10 +55,6 @@ public class HealthMetrics {
     public void setAst(BigDecimal ast) { this.ast = ast; }
     public BigDecimal getGgt() { return ggt; }
     public void setGgt(BigDecimal ggt) { this.ggt = ggt; }
-    public BigDecimal getKidneyCrystalMm() { return kidneyCrystalMm; }
-    public void setKidneyCrystalMm(BigDecimal kidneyCrystalMm) { this.kidneyCrystalMm = kidneyCrystalMm; }
-    public BigDecimal getCreatinine() { return creatinine; }
-    public void setCreatinine(BigDecimal creatinine) { this.creatinine = creatinine; }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
 }

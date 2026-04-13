@@ -1,5 +1,6 @@
 package com.healthsync.notification;
 
+import com.healthsync.entity.Badge;
 import com.healthsync.entity.FeishuPushLog;
 import com.healthsync.entity.HealthMetrics;
 import com.healthsync.repository.FeishuPushLogRepository;
@@ -90,10 +91,15 @@ public class FeishuNotificationService {
             alerts.add(String.format("🟠 尿酸 %dμmol/L（轻度超标）", m.getUricAcid()));
         if (m.getGgt() != null && m.getGgt().doubleValue() > 60)
             alerts.add(String.format("🟠 GGT %.1f U/L（偏高）", m.getGgt()));
-        if (m.getKidneyCrystalMm() != null && m.getKidneyCrystalMm().doubleValue() > 5)
-            alerts.add(String.format("⚠️ 肾结晶 %.1f mm（增大）", m.getKidneyCrystalMm()));
         if (!alerts.isEmpty())
             send("ALERT", "**⚕️ 健康指标预警**\n\n" + String.join("\n", alerts));
+    }
+
+    public void sendBadgeNotification(Badge badge) {
+        if (!ready()) return;
+        send("BADGE", badge.getIcon() + " **🎖️ 解锁新徽章！**\n\n" +
+                "**" + badge.getName() + "**\n" +
+                badge.getDescription());
     }
 
     private void send(String pushType, String content) {

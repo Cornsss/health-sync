@@ -15,9 +15,11 @@ public class ExerciseService {
     public static final int FAT_BURN_HIGH = (int)(MAX_HR * 0.70);
 
     private final ExerciseLogRepository repository;
+    private final PetService petService;
 
-    public ExerciseService(ExerciseLogRepository repository) {
+    public ExerciseService(ExerciseLogRepository repository, PetService petService) {
         this.repository = repository;
+        this.petService = petService;
     }
 
     public ExerciseLog save(ExerciseLog log) {
@@ -26,7 +28,12 @@ public class ExerciseService {
             log.setFatBurnMin((hr >= FAT_BURN_LOW && hr <= FAT_BURN_HIGH) ? log.getDurationMin() : 0);
         }
         if (log.getFatBurnMin() == null) log.setFatBurnMin(0);
-        return repository.save(log);
+        ExerciseLog saved = repository.save(log);
+
+        if (log.getDurationMin() != null && log.getDurationMin() >= 30) {
+            petService.recordExerciseComplete();
+        }
+        return saved;
     }
 
     public List<ExerciseLog> getTodayLogs() {

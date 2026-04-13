@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Health-Sync — 成就</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    :root {
+      --apple-gray-1: #f5f5f7;
+      --apple-gray-2: #e3e3e5;
+      --apple-gray-5: #86868b;
+      --apple-blue: #0071e3;
+      --apple-green: #34c759;
+      --apple-orange: #ff9500;
+      --apple-red: #ff3b30;
+      --apple-purple: #af52de;
+      --apple-yellow: #ffd60a;
+      --apple-bg: #ffffff;
+      --apple-card: #ffffff;
+      --apple-text: #1d1d1f;
+      --apple-text-secondary: #86868b;
+      --apple-radius: 16px;
+      --apple-radius-lg: 20px;
+      --apple-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    * { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      background: var(--apple-gray-1);
+      color: var(--apple-text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .nav-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--apple-bg);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+      box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .nav-bottom a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      text-decoration: none;
+      color: var(--apple-text-secondary);
+      font-size: 10px;
+      transition: color 0.2s;
+    }
+    .nav-bottom a i { font-size: 22px; }
+    .nav-bottom a.active { color: var(--apple-purple); }
+
+    .header {
+      background: var(--apple-bg);
+      padding: 16px 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+
+    .stats-card {
+      background: linear-gradient(135deg, var(--apple-purple) 0%, #8825d4 100%);
+      border-radius: var(--apple-radius-lg);
+      padding: 24px;
+      margin: 0 20px;
+      color: white;
+    }
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+    .stats-item-value {
+      font-size: 32px;
+      font-weight: 700;
+    }
+    .stats-item-label {
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 20px 12px;
+    }
+    .category-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .category-icon.water { background: rgba(0,199,210,0.15); }
+    .category-icon.purine { background: rgba(255,149,0,0.15); }
+    .category-icon.exercise { background: rgba(52,199,89,0.15); }
+    .category-icon.health { background: rgba(0,113,227,0.15); }
+    .category-icon.hidden { background: rgba(175,82,222,0.15); }
+    .category-icon.milestone { background: rgba(255,214,10,0.15); }
+    .category-name {
+      font-size: 17px;
+      font-weight: 600;
+    }
+    .category-count {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--apple-text-secondary);
+    }
+
+    .badge-card {
+      background: var(--apple-card);
+      border-radius: var(--apple-radius);
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.2s;
+      margin: 0 20px 12px;
+    }
+    .badge-card:active { transform: scale(0.97); }
+    .badge-card.unlocked {
+      box-shadow: var(--apple-shadow);
+    }
+    .badge-card.locked {
+      background: var(--apple-gray-1);
+      opacity: 0.7;
+    }
+    .badge-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .badge-card.locked .badge-icon {
+      filter: grayscale(100%);
+      opacity: 0.4;
+    }
+    .badge-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .badge-desc {
+      font-size: 12px;
+      color: var(--apple-text-secondary);
+    }
+    .badge-unlocked-tag {
+      display: inline-block;
+      background: var(--apple-green);
+      color: white;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+    .badge-locked-tag {
+      display: inline-block;
+      background: var(--apple-gray-2);
+      color: var(--apple-text-secondary);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+
+    .tip-card {
+      background: linear-gradient(135deg, rgba(175,82,222,0.1) 0%, rgba(0,113,227,0.1) 100%);
+      border-radius: var(--apple-radius);
+      margin: 20px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .tip-icon { font-size: 24px; }
+    .tip-text { font-size: 13px; color: var(--apple-text-secondary); }
+  </style>
+</head>
+<body>
+<div class="header">
+  <div class="header-title">成就徽章</div>
+</div>
+
+<div id="flashContainer"></div>
+
+<nav class="nav-bottom">
+  <a href="/"><i class="fas fa-house"></i>首页</a>
+  <a href="/metrics"><i class="fas fa-chart-line"></i>趋势</a>
+  <a href="/water"><i class="fas fa-droplet"></i>喝水</a>
+  <a href="/exercise"><i class="fas fa-person-running"></i>运动</a>
+  <a href="/achievements" class="active"><i class="fas fa-trophy"></i>成就</a>
+</nav>
+
+<div class="stats-card">
+  <div class="stats-row">
+    <div class="stats-item">
+      <div class="stats-item-value" id="unlockedCount">0</div>
+      <div class="stats-item-label">已解锁</div>
+    </div>
+    <div class="stats-item">
+      <div class="stats-item-value" id="totalCount">0</div>
+      <div class="stats-item-label">总徽章</div>
+    </div>
+    <div class="stats-item">
+      <div class="stats-item-value" id="progressPercent">0%</div>
+      <div class="stats-item-label">完成度</div>
+    </div>
+  </div>
+</div>
+
+<div id="badgesContainer"></div>
+
+<div class="tip-card">
+  <div class="tip-icon">💡</div>
+  <div class="tip-text">
+    徽章会在达成条件后自动解锁并通知你。<br/>
+    隐藏成就需要触发特定条件才能发现哦！
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+  const categories = [
+    { key: 'milestone', name: '里程碑成就', icon: '🏆' },
+    { key: 'water', name: '💧 饮水达人', icon: '💧' },
+    { key: 'purine', name: '⚔️ 抗嘌战士', icon: '⚔️' },
+    { key: 'exercise', name: '🏃 运动健将', icon: '🏃' },
+    { key: 'health', name: '🌟 健康先锋', icon: '🌟' },
+    { key: 'hidden', name: '🔮 隐藏成就', icon: '🔮' }
+  ];
+
+  const badges = /*[[${badges}]]*/ [];
+
+  function renderBadges() {
+    const container = document.getElementById('badgesContainer');
+    let unlockedCount = 0;
+
+    categories.forEach(cat => {
+      const catBadges = badges.filter(b => b.category === cat.key);
+      if (catBadges.length === 0) return;
+
+      const catUnlocked = catBadges.filter(b => b.unlocked).length;
+      unlockedCount += catUnlocked;
+
+      let html = `
+        <div class="category-header">
+          <div class="category-icon ${cat.key}">${cat.icon}</div>
+          <span class="category-name">${cat.name}</span>
+          <span class="category-count">${catUnlocked}/${catBadges.length}</span>
+        </div>
+        <div class="row g-0">
+      `;
+
+      catBadges.forEach(badge => {
+        html += `
+          <div class="col-6">
+            <div class="badge-card ${badge.unlocked ? 'unlocked' : 'locked'}">
+              <div class="badge-icon">${badge.icon}</div>
+              <div class="badge-name">${badge.unlocked ? badge.name : '???'}</div>
+              <div class="badge-desc">${badge.unlocked ? badge.description : '尚未解锁'}</div>
+              <div class="${badge.unlocked ? 'badge-unlocked-tag' : 'badge-locked-tag'}">
+                ${badge.unlocked ? '已解锁' : '未解锁'}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML += html;
+    });
+
+    document.getElementById('unlockedCount').textContent = unlockedCount;
+    document.getElementById('totalCount').textContent = badges.length;
+    if (badges.length > 0) {
+      document.getElementById('progressPercent').textContent = Math.round(unlockedCount * 100 / badges.length) + '%';
+    }
+  }
+
+  renderBadges();
+</script>
+</body>
+</html>

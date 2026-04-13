@@ -29,10 +29,8 @@ public class MetricsController {
         model.addAttribute("allMetrics",  service.findRecentPaged());
         model.addAttribute("form",        new HealthMetrics());
         model.addAttribute("chartLabels", mapper.writeValueAsString(recent.stream().map(m -> m.getRecordedAt().toString()).toList()));
-        model.addAttribute("uricData",    mapper.writeValueAsString(recent.stream().map(HealthMetrics::getUricAcid).toList()));
         model.addAttribute("weightData",  mapper.writeValueAsString(recent.stream().map(m -> m.getWeightKg() != null ? m.getWeightKg().doubleValue() : null).toList()));
-        model.addAttribute("ggtData",     mapper.writeValueAsString(recent.stream().map(m -> m.getGgt() != null ? m.getGgt().doubleValue() : null).toList()));
-        model.addAttribute("altData",     mapper.writeValueAsString(recent.stream().map(m -> m.getAlt() != null ? m.getAlt().doubleValue() : null).toList()));
+        model.addAttribute("fatData",     mapper.writeValueAsString(recent.stream().map(m -> m.getBodyFatPct() != null ? m.getBodyFatPct().doubleValue() : null).toList()));
         model.addAttribute("currentPage", "metrics");
         return "metrics/index";
     }

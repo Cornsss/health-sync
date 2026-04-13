@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Health-Sync — 食谱库</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    :root {
+      --apple-gray-1: #f5f5f7;
+      --apple-gray-2: #e3e3e5;
+      --apple-gray-5: #86868b;
+      --apple-blue: #0071e3;
+      --apple-green: #34c759;
+      --apple-orange: #ff9500;
+      --apple-red: #ff3b30;
+      --apple-yellow: #ffd60a;
+      --apple-cyan: #00c7d2;
+      --apple-bg: #ffffff;
+      --apple-card: #ffffff;
+      --apple-text: #1d1d1f;
+      --apple-text-secondary: #86868b;
+      --apple-radius: 16px;
+      --apple-radius-lg: 20px;
+      --apple-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    * { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      background: var(--apple-gray-1);
+      color: var(--apple-text);
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    .nav-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--apple-bg);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+      box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .nav-bottom a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      text-decoration: none;
+      color: var(--apple-text-secondary);
+      font-size: 10px;
+      transition: color 0.2s;
+    }
+    .nav-bottom a i { font-size: 22px; }
+    .nav-bottom a.active { color: var(--apple-green); }
+
+    .header {
+      background: var(--apple-bg);
+      padding: 16px 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--apple-blue);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      margin-bottom: 12px;
+      padding: 0 20px;
+    }
+    .back-link:active { opacity: 0.7; }
+
+    .search-bar {
+      background: var(--apple-gray-1);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 15px;
+      width: 100%;
+      outline: none;
+    }
+    .search-bar:focus {
+      box-shadow: 0 0 0 3px rgba(0,113,227,0.2);
+    }
+
+    .category-tab {
+      display: flex;
+      gap: 8px;
+      padding: 12px 20px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .category-tab::-webkit-scrollbar { display: none; }
+    .tab-item {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--apple-bg);
+      color: var(--apple-text-secondary);
+      border: 1px solid var(--apple-gray-2);
+    }
+    .tab-item.active {
+      background: var(--apple-green);
+      color: white;
+      border-color: var(--apple-green);
+    }
+
+    .meal-card {
+      background: var(--apple-card);
+      border-radius: var(--apple-radius);
+      padding: 16px;
+      margin: 0 20px 12px;
+      box-shadow: var(--apple-shadow);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .meal-card:active { transform: scale(0.98); }
+
+    .meal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .meal-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .meal-type-badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    .meal-type-badge.breakfast { background: rgba(255,214,10,0.2); color: #b8860b; }
+    .meal-type-badge.lunch { background: rgba(0,113,227,0.15); color: var(--apple-blue); }
+    .meal-type-badge.dinner { background: rgba(175,82,222,0.15); color: #7B2CBF; }
+    .meal-type-badge.snack { background: rgba(0,199,210,0.15); color: #00A3A3; }
+
+    .meal-desc {
+      font-size: 13px;
+      color: var(--apple-text-secondary);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .meal-stats {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .meal-stat {
+      font-size: 12px;
+      color: var(--apple-text-secondary);
+    }
+    .meal-stat strong {
+      color: var(--apple-text);
+    }
+
+    .meal-foods {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .food-tag {
+      font-size: 11px;
+      padding: 4px 8px;
+      background: var(--apple-gray-1);
+      border-radius: 6px;
+      color: var(--apple-text-secondary);
+    }
+
+    .stats-bar {
+      background: var(--apple-bg);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      border-bottom: 1px solid var(--apple-gray-1);
+    }
+    .stats-bar-item { flex: 1; }
+    .stats-bar-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--apple-green);
+    }
+    .stats-bar-label {
+      font-size: 11px;
+      color: var(--apple-text-secondary);
+    }
+
+    .modal-meal-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .modal-meal-desc {
+      font-size: 14px;
+      color: var(--apple-text-secondary);
+      margin-bottom: 16px;
+    }
+    .modal-section {
+      margin-bottom: 16px;
+    }
+    .modal-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--apple-text);
+    }
+    .modal-food-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--apple-gray-1);
+    }
+    .modal-food-item:last-child { border-bottom: none; }
+    .modal-food-name { font-weight: 500; }
+    .modal-food-amount { color: var(--apple-text-secondary); }
+    .modal-method {
+      font-size: 13px;
+      color: var(--apple-text-secondary);
+      padding: 10px;
+      background: var(--apple-gray-1);
+      border-radius: 10px;
+      line-height: 1.5;
+    }
+    .modal-stat-row {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+    .modal-stat-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .modal-stat-label {
+      font-size: 12px;
+      color: var(--apple-text-secondary);
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <div class="header-title">食谱库</div>
+</div>
+
+<nav class="nav-bottom">
+  <a href="/"><i class="fas fa-house"></i>首页</a>
+  <a href="/metrics"><i class="fas fa-chart-line"></i>趋势</a>
+  <a href="/water"><i class="fas fa-droplet"></i>喝水</a>
+  <a href="/exercise"><i class="fas fa-person-running"></i>运动</a>
+  <a href="/meals"><i class="fas fa-utensils"></i>饮食</a>
+</nav>
+
+<a href="/meals" class="back-link">
+  <i class="fas fa-arrow-left"></i> 返回膳食管理
+</a>
+
+<div style="padding: 0 20px 12px;">
+  <input type="text" class="search-bar" id="searchInput" placeholder="搜索食谱..." oninput="filterMeals()">
+</div>
+
+<div class="category-tab">
+  <div class="tab-item active" data-type="all" onclick="selectTab(this)">全部</div>
+  <div class="tab-item" data-type="BREAKFAST" onclick="selectTab(this)">&#127748; 早餐</div>
+  <div class="tab-item" data-type="LUNCH" onclick="selectTab(this)">&#9728;&#65039; 午餐</div>
+  <div class="tab-item" data-type="DINNER" onclick="selectTab(this)">&#127749; 晚餐</div>
+  <div class="tab-item" data-type="SNACK" onclick="selectTab(this)">&#127829; 加餐</div>
+</div>
+
+<div class="stats-bar">
+  <div class="stats-bar-item">
+    <div class="stats-bar-value" id="totalCount">0</div>
+    <div class="stats-bar-label">食谱总数</div>
+  </div>
+  <div class="stats-bar-item">
+    <div class="stats-bar-value" id="avgPurine">0</div>
+    <div class="stats-bar-label">平均嘌呤</div>
+  </div>
+</div>
+
+<div id="mealsContainer"></div>
+
+<div class="modal fade" id="mealModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 20px;">
+      <div class="modal-header border-0" style="padding: 20px 20px 0;">
+        <div>
+          <div class="modal-meal-name" id="modalMealName"></div>
+          <div class="modal-meal-desc" id="modalMealDesc"></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding: 0 20px 20px;">
+        <div class="modal-stat-row mb-3">
+          <div>
+            <div class="modal-stat-value" id="modalPurine">0</div>
+            <div class="modal-stat-label">嘌呤 (mg)</div>
+          </div>
+          <div>
+            <div class="modal-stat-value" id="modalCalories">0</div>
+            <div class="modal-stat-label">热量 (kcal)</div>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">&#129365; 食材</div>
+          <div id="modalFoods"></div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">&#128104;&#8205;&#127859; 做法</div>
+          <div id="modalMethods"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+  const allMeals = /*[[${mealPlans}]]*/ [];
+
+  let currentType = 'all';
+  let searchText = '';
+
+  function init() {
+    renderStats();
+    renderMeals();
+  }
+
+  function renderStats() {
+    document.getElementById('totalCount').textContent = allMeals.length;
+    const avgPurine = allMeals.reduce((sum, m) => sum + (m.totalPurineMg || 0), 0) / allMeals.length;
+    document.getElementById('avgPurine').textContent = avgPurine.toFixed(0);
+  }
+
+  function selectTab(el) {
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentType = el.dataset.type;
+    renderMeals();
+  }
+
+  function filterMeals() {
+    searchText = document.getElementById('searchInput').value.toLowerCase();
+    renderMeals();
+  }
+
+  function renderMeals() {
+    const container = document.getElementById('mealsContainer');
+    let filtered = allMeals;
+
+    if (currentType !== 'all') {
+      filtered = filtered.filter(m => m.mealType === currentType);
+    }
+    if (searchText) {
+      filtered = filtered.filter(m =>
+        m.planName.toLowerCase().includes(searchText) ||
+        m.description.toLowerCase().includes(searchText) ||
+        (m.foodNames && m.foodNames.some(f => f.toLowerCase().includes(searchText)))
+      );
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--apple-text-secondary);">没有找到相关食谱</div>';
+      return;
+    }
+
+    let html = '';
+    filtered.forEach(meal => {
+      const typeClass = meal.mealType.toLowerCase();
+      const typeNames = { BREAKFAST: '早餐', LUNCH: '午餐', DINNER: '晚餐', SNACK: '加餐' };
+      const foodTags = (meal.foodNames || []).slice(0, 4).join(' · ');
+
+      html += `
+        <div class="meal-card" onclick="showMealDetail('${meal.id}')">
+          <div class="meal-header">
+            <div class="meal-name">${meal.planName}</div>
+            <span class="meal-type-badge ${typeClass}">${typeNames[meal.mealType] || meal.mealType}</span>
+          </div>
+          <div class="meal-desc">${meal.description}</div>
+          <div class="meal-stats">
+            <div class="meal-stat">嘌呤 <strong>${(meal.totalPurineMg || 0).toFixed(1)}</strong> mg</div>
+            <div class="meal-stat">热量 <strong>${(meal.totalCalories || 0).toFixed(0)}</strong> kcal</div>
+          </div>
+          ${foodTags ? `<div class="meal-foods"><span class="food-tag">${foodTags}</span></div>` : ''}
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  function showMealDetail(id) {
+    const meal = allMeals.find(m => m.id == id);
+    if (!meal) return;
+
+    document.getElementById('modalMealName').textContent = meal.planName;
+    document.getElementById('modalMealDesc').textContent = meal.description;
+    document.getElementById('modalPurine').textContent = (meal.totalPurineMg || 0).toFixed(1);
+    document.getElementById('modalCalories').textContent = (meal.totalCalories || 0).toFixed(0);
+
+    let foodsHtml = '';
+    (meal.items || []).forEach(item => {
+      foodsHtml += `
+        <div class="modal-food-item">
+          <span class="modal-food-name">${item.foodName}</span>
+          <span class="modal-food-amount">${item.amountG}g</span>
+        </div>
+      `;
+    });
+    document.getElementById('modalFoods').innerHTML = foodsHtml;
+
+    let methodsHtml = '';
+    (meal.items || []).forEach(item => {
+      if (item.cookingMethod) {
+        methodsHtml += `<div class="mb-2"><strong>${item.foodName}:</strong> ${item.cookingMethod}</div>`;
+      }
+    });
+    document.getElementById('modalMethods').innerHTML = methodsHtml || '<div style="color:var(--apple-text-secondary);font-size:13px;">无详细做法</div>';
+
+    const modal = new bootstrap.Modal(document.getElementById('mealModal'));
+    modal.show();
+  }
+
+  init();
+</script>
+</body>
+</html>

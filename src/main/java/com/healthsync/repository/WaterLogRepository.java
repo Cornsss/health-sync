@@ -24,4 +24,10 @@ public interface WaterLogRepository extends JpaRepository<WaterLog, Long> {
     Optional<WaterLog> findFirstByOrderByLoggedAtDesc();
 
     List<WaterLog> findByLoggedDateBetween(LocalDate start, LocalDate end);
+
+    @Query("SELECT w FROM WaterLog w WHERE w.loggedDate = :date ORDER BY w.loggedAt ASC LIMIT 1")
+    Optional<WaterLog> findFirstByDateOrderByTimeAsc(@Param("date") LocalDate date);
+
+    @Query("SELECT COUNT(DISTINCT w.loggedDate) FROM WaterLog w WHERE w.loggedDate BETWEEN :start AND :end")
+    long countDaysWithLogs(@Param("start") LocalDate start, @Param("end") LocalDate end);
 }

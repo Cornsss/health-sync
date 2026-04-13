@@ -2,178 +2,1266 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Health-Sync — 仪表盘</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Health-Sync</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
   <style>
-    body { background: #f8f9fa; }
-    .stat-card { border-left: 4px solid; border-radius: .5rem; }
-    .card-uric  { border-left-color: #0d6efd; }
-    .card-water { border-left-color: #0dcaf0; }
-    .card-liver { border-left-color: #198754; }
-    .card-weight{ border-left-color: #fd7e14; }
-    .score-circle {
-      width: 80px; height: 80px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem; font-weight: bold; margin: 0 auto;
+    :root {
+      --apple-gray-1: #f5f5f7;
+      --apple-gray-2: #e3e3e5;
+      --apple-gray-3: #d2d2d4;
+      --apple-gray-5: #86868b;
+      --apple-gray-6: #6e6e73;
+      --apple-blue: #0071e3;
+      --apple-green: #34c759;
+      --apple-orange: #ff9500;
+      --apple-red: #ff3b30;
+      --apple-purple: #af52de;
+      --apple-yellow: #ffcc00;
+      --apple-bg: #ffffff;
+      --apple-card: #ffffff;
+      --apple-text: #1d1d1f;
+      --apple-text-secondary: #86868b;
+      --apple-radius: 16px;
+      --apple-radius-lg: 20px;
+      --apple-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --apple-shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    * { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      background: var(--apple-gray-1);
+      color: var(--apple-text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .late-night {
+      --apple-gray-1: #1a1a2e;
+      --apple-gray-2: #16213e;
+      --apple-gray-5: #6e6e73;
+      --apple-bg: #0f0f1a;
+      --apple-card: #16213e;
+      --apple-text: #ffffff;
+      --apple-text-secondary: #a0a0a0;
+    }
+
+    .late-night .nav-bottom { background: #16213e !important; border-top: 1px solid #0f3460; }
+    .late-night .nav-bottom a { color: #a0a0a0 !important; }
+    .late-night .nav-bottom a.active { color: #0071e3 !important; }
+
+    .nav-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--apple-bg);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+      box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .nav-bottom a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      text-decoration: none;
+      color: var(--apple-text-secondary);
+      font-size: 10px;
+      transition: color 0.2s;
+    }
+    .nav-bottom a i { font-size: 22px; }
+    .nav-bottom a.active { color: var(--apple-blue); }
+
+    .header {
+      background: var(--apple-bg);
+      padding: 16px 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header-subtitle {
+      font-size: 14px;
+      color: var(--apple-text-secondary);
+    }
+
+    .card-apple {
+      background: var(--apple-card);
+      border-radius: var(--apple-radius);
+      box-shadow: var(--apple-shadow);
+      border: none;
+      overflow: hidden;
+    }
+
+    .card-pet {
+      background: linear-gradient(135deg, #fff9f0 0%, #fff5e6 100%);
+      border-radius: var(--apple-radius-lg);
+      padding: 20px;
+      margin: 16px 20px;
+    }
+    .late-night .card-pet {
+      background: linear-gradient(135deg, #2d2d44 0%, #1f1f35 100%);
+    }
+
+    .pet-scene {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: var(--apple-radius-lg);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .late-night .pet-scene {
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    }
+    .pet-ground {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: linear-gradient(180deg, #d4a574 0%, #c49a6c 100%);
+    }
+    .late-night .pet-ground {
+      background: linear-gradient(180deg, #3d3d5c 0%, #2d2d44 100%);
+    }
+    .pet-ground::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 8px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 100%);
+    }
+
+    .zhupi-cat {
+      position: relative;
+      width: 100px;
+      height: 90px;
+    }
+
+    .cat-body {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 55px;
+      height: 35px;
+      background: #ff9966;
+      border-radius: 50% 50% 45% 45%;
+    }
+    .cat-body-white {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 30px;
+      background: #fff5ee;
+      border-radius: 50% 50% 45% 45%;
+      z-index: 1;
+    }
+    .cat-patch {
+      position: absolute;
+      background: #ff7733;
+      border-radius: 50%;
+    }
+    .cat-patch-back {
+      top: 0;
+      right: 5px;
+      width: 25px;
+      height: 20px;
+      border-radius: 50% 50% 30% 30%;
+    }
+    .cat-patch-side {
+      bottom: 5px;
+      left: 3px;
+      width: 18px;
+      height: 15px;
+      border-radius: 40%;
+    }
+
+    .cat-head {
+      position: absolute;
+      bottom: 45px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 45px;
+      height: 38px;
+      background: #ff9966;
+      border-radius: 50% 50% 45% 45%;
+      z-index: 2;
+    }
+    .cat-head-white {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 35px;
+      height: 30px;
+      background: #fff5ee;
+      border-radius: 50% 50% 45% 45%;
+      z-index: 1;
+    }
+    .cat-patch-forehead {
+      top: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 15px;
+      height: 12px;
+      border-radius: 50% 50% 30% 30%;
+    }
+    .cat-patch-ear-left {
+      top: -6px;
+      left: 3px;
+      width: 14px;
+      height: 16px;
+      background: #ff9966;
+      border-radius: 50% 50% 0 0;
+    }
+    .cat-patch-ear-right {
+      top: -6px;
+      right: 3px;
+      width: 14px;
+      height: 16px;
+      background: #ff9966;
+      border-radius: 50% 50% 0 0;
+    }
+
+    .cat-ear {
+      position: absolute;
+      top: -8px;
+      width: 16px;
+      height: 20px;
+      background: #ff9966;
+      border-radius: 50% 50% 0 0;
+      z-index: 0;
+    }
+    .cat-ear::after {
+      content: '';
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 10px;
+      height: 12px;
+      background: #ffb5a0;
+      border-radius: 50% 50% 0 0;
+    }
+    .cat-ear-left { left: 3px; }
+    .cat-ear-right { right: 3px; }
+
+    .cat-eye {
+      position: absolute;
+      top: 14px;
+      width: 10px;
+      height: 12px;
+      background: #2d2d2d;
+      border-radius: 50%;
+      z-index: 3;
+    }
+    .cat-eye::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 4px;
+      height: 4px;
+      background: white;
+      border-radius: 50%;
+    }
+    .cat-eye-left { left: 8px; }
+    .cat-eye-right { right: 8px; }
+
+    .cat-nose {
+      position: absolute;
+      top: 23px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 7px;
+      height: 5px;
+      background: #ff6b6b;
+      border-radius: 50% 50% 40% 40%;
+      z-index: 3;
+    }
+
+    .cat-mouth {
+      position: absolute;
+      top: 27px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 10px;
+      height: 5px;
+      border-bottom: 2px solid #2d2d2d;
+      border-left: 2px solid #2d2d2d;
+      border-right: 2px solid #2d2d2d;
+      border-radius: 0 0 50% 50%;
+      background: transparent;
+      z-index: 3;
+    }
+
+    .cat-whisker {
+      position: absolute;
+      top: 25px;
+      width: 14px;
+      height: 1px;
+      background: #888;
+      z-index: 3;
+    }
+    .cat-whisker-left-top { left: -8px; transform: rotate(-10deg); }
+    .cat-whisker-left-bottom { left: -8px; top: 28px; transform: rotate(10deg); }
+    .cat-whisker-right-top { right: -8px; transform: rotate(10deg); }
+    .cat-whisker-right-bottom { right: -8px; top: 28px; transform: rotate(-10deg); }
+
+    .cat-leg {
+      position: absolute;
+      bottom: 0;
+      width: 12px;
+      height: 20px;
+      background: #fff5ee;
+      border-radius: 0 0 6px 6px;
+      z-index: 0;
+    }
+    .cat-leg-front-left { left: 20px; }
+    .cat-leg-front-right { left: 36px; }
+    .cat-leg-limp {
+      animation: limp 0.8s ease-in-out infinite;
+    }
+    @keyframes limp {
+      0%, 100% { transform: rotate(-5deg); height: 20px; }
+      50% { transform: rotate(5deg); height: 18px; }
+    }
+    .cat-leg-back-left { left: 10px; }
+    .cat-leg-back-right { left: 44px; }
+
+    .cat-tail {
+      position: absolute;
+      bottom: 25px;
+      right: -10px;
+      width: 30px;
+      height: 8px;
+      background: linear-gradient(90deg, #ff9966, #ff7733);
+      border-radius: 0 50% 50% 0;
+      transform-origin: left center;
+      animation: tailWag 1s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    @keyframes tailWag {
+      0%, 100% { transform: rotate(-10deg); }
+      50% { transform: rotate(15deg); }
+    }
+
+    .pet-character {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 70px;
+      cursor: pointer;
+      transition: left 1.5s ease-in-out;
+    }
+
+    .pet-body {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 35px;
+      background: linear-gradient(135deg, #ff9966 0%, #ff7733 100%);
+      border-radius: 50% 50% 45% 45%;
+      box-shadow: inset -5px -5px 10px rgba(0,0,0,0.1), inset 3px 3px 8px rgba(255,255,255,0.3);
+    }
+    .pet-body::before {
+      content: '';
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      width: 15px;
+      height: 20px;
+      background: #fff5ee;
+      border-radius: 50%;
+    }
+
+    .pet-head {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 45px;
+      height: 38px;
+      background: linear-gradient(135deg, #ff9966 0%, #ff7733 100%);
+      border-radius: 50% 50% 45% 45%;
+      z-index: 2;
+    }
+    .pet-head::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 15px;
+      height: 18px;
+      background: #fff5ee;
+      border-radius: 50% 0 50% 50%;
+    }
+
+    .pet-ear {
+      position: absolute;
+      top: -8px;
+      width: 16px;
+      height: 20px;
+      background: #ff9966;
+      border-radius: 50% 50% 0 0;
+    }
+    .pet-ear::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 8px;
+      height: 10px;
+      background: #ffb5a0;
+      border-radius: 50% 50% 0 0;
+    }
+    .pet-ear.left { left: 2px; transform: rotate(-15deg); }
+    .pet-ear.right { right: 2px; transform: rotate(15deg); }
+
+    .pet-eye {
+      position: absolute;
+      top: 12px;
+      width: 10px;
+      height: 12px;
+      background: #2d2d2d;
+      border-radius: 50%;
+    }
+    .pet-eye::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 4px;
+      height: 4px;
+      background: white;
+      border-radius: 50%;
+    }
+    .pet-eye.left { left: 8px; }
+    .pet-eye.right { right: 8px; }
+
+    .pet-nose {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 8px;
+      height: 6px;
+      background: #ff6b6b;
+      border-radius: 50% 50% 40% 40%;
+    }
+
+    .pet-mouth {
+      position: absolute;
+      top: 27px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 12px;
+      height: 6px;
+      border-bottom: 2px solid #2d2d2d;
+      border-left: 2px solid #2d2d2d;
+      border-right: 2px solid #2d2d2d;
+      border-radius: 0 0 50% 50%;
+      background: transparent;
+    }
+
+    .pet-whisker {
+      position: absolute;
+      top: 24px;
+      width: 15px;
+      height: 1px;
+      background: #888;
+    }
+    .pet-whisker.left { left: -10px; transform: rotate(-10deg); }
+    .pet-whisker.right { right: -10px; transform: rotate(10deg); }
+
+    .pet-tail {
+      position: absolute;
+      bottom: 25px;
+      right: -5px;
+      width: 30px;
+      height: 8px;
+      background: linear-gradient(90deg, #ff9966, #ff7733);
+      border-radius: 0 50% 50% 0;
+      transform-origin: left center;
+      animation: tailWag 1s ease-in-out infinite;
+    }
+
+    .pet-leg {
+      position: absolute;
+      bottom: 0;
+      width: 12px;
+      height: 18px;
+      background: linear-gradient(180deg, #ff9966, #ff7733);
+      border-radius: 0 0 6px 6px;
+    }
+    .pet-leg.front-left { left: 18px; }
+    .pet-leg.front-right { left: 32px; }
+    .pet-leg.back-left { left: 8px; }
+    .pet-leg.back-right { left: 42px; }
+
+    .pet-paw {
+      position: absolute;
+      bottom: 0;
+      width: 14px;
+      height: 8px;
+      background: #fff5ee;
+      border-radius: 50%;
+    }
+    .pet-paw.front-left { left: 17px; }
+    .pet-paw.front-right { left: 31px; }
+    .pet-paw.back-left { left: 7px; }
+    .pet-paw.back-right { left: 41px; }
+
+    @keyframes tailWag {
+      0%, 100% { transform: rotate(-10deg); }
+      50% { transform: rotate(15deg); }
+    }
+    @keyframes breathe {
+      0%, 100% { transform: translateX(-50%) scaleY(1); }
+      50% { transform: translateX(-50%) scaleY(1.03); }
+    }
+    @keyframes blink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+    @keyframes walk {
+      0%, 100% { transform: translateX(-50%) rotate(-2deg); }
+      25% { transform: translateX(-50%) rotate(2deg) translateY(-3px); }
+      50% { transform: translateX(-50%) rotate(-2deg); }
+      75% { transform: translateX(-50%) rotate(2deg) translateY(-3px); }
+    }
+    @keyframes jump {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-30px); }
+    }
+    @keyframes sleep {
+      0%, 100% { transform: translateX(-50%) rotate(-5deg); }
+      50% { transform: translateX(-50%) rotate(5deg); }
+    }
+    @keyframes pat {
+      0%, 100% { transform: translateX(-50%) rotate(0deg); }
+      25% { transform: translateX(-50%) rotate(-8deg) translateY(-5px); }
+      75% { transform: translateX(-50%) rotate(8deg) translateY(-5px); }
+    }
+    @keyframes excited {
+      0%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
+      25% { transform: translateX(-50%) translateY(-15px) scale(1.05); }
+      50% { transform: translateX(-50%) translateY(0) scale(1); }
+      75% { transform: translateX(-50%) translateY(-15px) scale(1.05); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-20px); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(-50%) rotate(0deg); }
+      25% { transform: translateX(-50%) rotate(-5deg); }
+      75% { transform: translateX(-50%) rotate(5deg); }
+    }
+    @keyframes heart {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    .pet-walking { animation: walk 0.3s ease-in-out infinite; }
+    .pet-jumping { animation: jump 0.5s ease-in-out infinite; }
+    .pet-bouncing { animation: bounce 0.4s ease-in-out infinite; }
+    .pet-shaking { animation: shake 0.3s ease-in-out infinite; }
+    .pet-excited-anim { animation: excited 0.3s ease-in-out infinite; }
+    .pet-sleeping-anim { animation: sleep 2s ease-in-out infinite; }
+    .pet-heart { animation: heart 1s ease-out forwards; }
+
+    .pet-dead {
+      opacity: 0.4;
+      filter: grayscale(100%);
+    }
+    .pet-dead .cat-leg-limp,
+    .pet-dead .cat-tail {
+      animation: none !important;
+    }
+    .pet-dead-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+    }
+    .pet-dead-text {
+      font-size: 32px;
+      font-weight: 700;
+      color: rgba(0,0,0,0.3);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      letter-spacing: 4px;
+    }
+
+    .pet-body { animation: breathe 3s ease-in-out infinite, walk 0.5s ease-in-out infinite; }
+    .pet-head { animation: breathe 3s ease-in-out infinite; }
+    .pet-eye { animation: blink 4s ease-in-out infinite; }
+
+    .pet-walking .pet-body { animation: breathe 3s ease-in-out infinite, walk 0.3s ease-in-out infinite; }
+    .pet-walking .pet-head { animation: breathe 3s ease-in-out infinite; }
+    .pet-walking .pet-leg.front-left { animation: walk 0.15s ease-in-out infinite; }
+   .pet-walking .pet-leg.front-right { animation: walk 0.15s ease-in-out infinite 0.075s; }
+
+    .pet-jumping .pet-body,
+    .pet-jumping .pet-head { animation: jump 0.6s ease-in-out infinite; }
+    .pet-jumping .pet-tail { animation: tailWag 0.3s ease-in-out infinite; }
+
+    .pet-sleeping .pet-body { animation: sleep 2s ease-in-out infinite; }
+    .pet-sleeping .pet-head { animation: sleep 2s ease-in-out infinite; }
+    .pet-sleeping .pet-eye { animation: none; height: 3px; top: 15px; border-radius: 0; }
+    .pet-sleeping .pet-tail { animation: none; transform: rotate(-20deg); }
+
+    .pet-patting .pet-body,
+    .pet-patting .pet-head { animation: pat 0.4s ease-in-out infinite; }
+    .pet-patting .pet-tail { animation: tailWag 0.2s ease-in-out infinite; }
+
+    .pet-excited .pet-body,
+    .pet-excited .pet-head { animation: excited 0.5s ease-in-out infinite; }
+    .pet-excited .pet-tail { animation: tailWag 0.2s ease-in-out infinite; }
+
+    .pet-name-tag {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.95);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      white-space: nowrap;
+    }
+    .late-night .pet-name-tag {
+      background: rgba(255,255,255,0.15);
+      color: white;
+    }
+    .pet-level-badge {
+      background: linear-gradient(135deg, #ff9500, #ff6b00);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-left: 6px;
+    }
+
+    .stat-card {
+      background: var(--apple-card);
+      border-radius: var(--apple-radius);
+      padding: 16px;
+      box-shadow: var(--apple-shadow);
+    }
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .stat-icon.blue { background: rgba(0,113,227,0.12); color: var(--apple-blue); }
+    .stat-icon.cyan { background: rgba(0,199,210,0.12); color: #00c7d2; }
+    .stat-icon.green { background: rgba(52,199,89,0.12); color: var(--apple-green); }
+    .stat-icon.orange { background: rgba(255,149,0,0.12); color: var(--apple-orange); }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--apple-text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .progress-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .progress-circle svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .progress-circle circle {
+      fill: none;
+      stroke-width: 5;
+    }
+    .progress-circle .bg { stroke: var(--apple-gray-2); }
+    .progress-circle .fg {
+      stroke: var(--apple-green);
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+    .progress-circle .value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .quick-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px;
+      border-radius: var(--apple-radius);
+      background: var(--apple-card);
+      text-decoration: none;
+      color: var(--apple-text);
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: var(--apple-shadow);
+    }
+    .quick-action:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--apple-shadow-lg);
+    }
+    .quick-action i {
+      font-size: 28px;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .quick-action span { font-size: 13px; font-weight: 500; }
+
+    .exercise-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--apple-gray-2);
+    }
+    .exercise-item:last-child { border-bottom: none; }
+    .exercise-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255,149,0,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--apple-orange);
+    }
+    .exercise-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .modal-apple {
+      border-radius: var(--apple-radius-lg);
+      border: none;
+    }
+    .modal-apple .modal-content {
+      border-radius: var(--apple-radius-lg);
+      border: none;
+    }
+    .modal-apple .modal-header {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .modal-apple .modal-footer {
+      border-top: none;
+      padding-top: 0;
+    }
+    .modal-apple .btn {
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 500;
+    }
+
+    .btn-apple {
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-weight: 500;
+      font-size: 15px;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-apple:active { transform: scale(0.97); }
+    .btn-apple-primary {
+      background: var(--apple-blue);
+      color: white;
+    }
+    .btn-apple-primary:hover { background: #0077ed; }
+
+    .late-night-banner {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px 20px;
+      border-radius: var(--apple-radius);
+      margin: 0 20px 16px;
+      text-align: center;
+    }
+    .late-night-banner .message { font-size: 16px; font-weight: 500; }
+
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: -1;
+    }
+    .star {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 2s ease-in-out infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.5); }
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 12px;
     }
   </style>
 </head>
-<body>
-<div th:replace="~{fragments/nav :: navbar}"></div>
-<div th:replace="~{fragments/nav :: flash}"></div>
+<body th:classappend="${lateNightMode} ? 'late-night' : ''">
+<th:block th:if="${lateNightMode}">
+  <div class="stars" id="stars"></div>
+</th:block>
 
-<div class="container-fluid py-3 px-3">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0 fw-bold text-success">&#127968; 健康仪表盘</h5>
-    <small class="text-muted" th:text="${d.todayDate}"></small>
-  </div>
-
-  <!-- ── 4 Stat Cards ─────────────────────────────────────────── -->
-  <div class="row g-3 mb-4">
-
-    <!-- 尿酸预算 -->
-    <div class="col-6 col-lg-3">
-      <div class="card stat-card card-uric h-100 shadow-sm">
-        <div class="card-body p-3">
-          <div class="text-muted small mb-1">今日嘌呤预算</div>
-          <div class="fw-bold fs-5"
-               th:text="${#numbers.formatDecimal(d.uricAcidBudget.remainingMg,1,1)} + ' mg 剩余'"></div>
-          <div class="progress mt-2" style="height:6px">
-            <div class="progress-bar"
-                 th:classappend="${d.uricAcidBudget.status.cssClass == 'danger'} ? 'bg-danger' :
-                                  (${d.uricAcidBudget.status.cssClass == 'orange'} ? 'bg-warning' :
-                                  (${d.uricAcidBudget.status.cssClass == 'warning'} ? 'bg-warning' : 'bg-success'))"
-                 th:style="'width:' + ${d.uricAcidBudget.progressPercent} + '%'"></div>
-          </div>
-          <small th:text="'已用 ' + ${#numbers.formatDecimal(d.uricAcidBudget.consumedMg,1,1)} + ' / ' + ${#numbers.formatDecimal(d.uricAcidBudget.totalBudgetMg,1,0)} + ' mg'"
-                 class="text-muted"></small>
-          <span class="badge mt-1 d-block"
-                th:classappend="${d.uricAcidBudget.status.cssClass == 'danger'} ? 'bg-danger' :
-                                 (${d.uricAcidBudget.status.cssClass == 'orange'} ? 'bg-warning text-dark' :
-                                 (${d.uricAcidBudget.status.cssClass == 'warning'} ? 'bg-warning text-dark' : 'bg-success'))"
-                th:text="${d.uricAcidBudget.status.label}"></span>
-        </div>
-      </div>
+<div class="header">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <div class="header-title">健康同步</div>
+      <div class="header-subtitle" th:text="${d.todayDate}"></div>
     </div>
-
-    <!-- 饮水进度 -->
-    <div class="col-6 col-lg-3">
-      <div class="card stat-card card-water h-100 shadow-sm">
-        <div class="card-body p-3">
-          <div class="text-muted small mb-1">今日饮水</div>
-          <div class="fw-bold fs-5" th:text="${d.todayWaterMl} + ' ml'"></div>
-          <div class="progress mt-2" style="height:6px">
-            <div class="progress-bar bg-info"
-                 th:style="'width:' + ${d.waterProgressPct} + '%'"></div>
-          </div>
-          <small class="text-muted" th:text="'目标 ' + ${d.waterGoalMl} + ' ml'"></small>
-          <span th:if="${d.waterProgressPct >= 100}" class="badge bg-success mt-1 d-block">&#10003; 达标</span>
-          <span th:unless="${d.waterProgressPct >= 100}" class="badge bg-secondary mt-1 d-block"
-                th:text="'还差 ' + (${d.waterGoalMl} - ${d.todayWaterMl}) + ' ml'"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 脂肪肝进度 -->
-    <div class="col-6 col-lg-3">
-      <div class="card stat-card card-liver h-100 shadow-sm">
-        <div class="card-body p-3">
-          <div class="text-muted small mb-1">脂肪肝修复评分</div>
-          <div th:if="${d.fattyLiverProgress.hasData}">
-            <div class="fw-bold fs-5" th:text="${#numbers.formatDecimal(d.fattyLiverProgress.totalScore,1,1)} + ' 分'"></div>
-            <div class="progress mt-2" style="height:6px">
-              <div class="progress-bar bg-success"
-                   th:style="'width:' + ${d.fattyLiverProgress.totalScore} + '%'"></div>
-            </div>
-            <small class="text-muted" th:text="${d.fattyLiverProgress.grade}"></small>
-          </div>
-          <div th:unless="${d.fattyLiverProgress.hasData}" class="text-muted small mt-2">暂无数据，请先录入指标</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 最新体重 / 尿酸 -->
-    <div class="col-6 col-lg-3">
-      <div class="card stat-card card-weight h-100 shadow-sm">
-        <div class="card-body p-3">
-          <div class="text-muted small mb-1">最新检测</div>
-          <div th:if="${d.latestMetrics != null}">
-            <div class="fw-bold" th:if="${d.latestMetrics.weightKg != null}"
-                 th:text="'体重 ' + ${d.latestMetrics.weightKg} + ' kg'"></div>
-            <div class="fw-bold" th:if="${d.latestMetrics.uricAcid != null}">
-              尿酸
-              <span th:text="${d.latestMetrics.uricAcid}"></span>
-              <small th:classappend="${d.latestMetrics.uricAcid > 420} ? 'text-danger' : 'text-success'"
-                     th:text="${d.latestMetrics.uricAcid > 420} ? ' ↑ 超标' : ' ✓ 正常'"></small>
-            </div>
-            <div th:if="${d.latestMetrics.ggt != null}">
-              <small class="text-muted" th:text="'GGT ' + ${d.latestMetrics.ggt} + ' U/L'"></small>
-            </div>
-            <small class="text-muted" th:text="${d.latestMetrics.recordedAt}"></small>
-          </div>
-          <div th:unless="${d.latestMetrics != null}" class="text-muted small mt-2">暂无数据</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── 本周运动 ──────────────────────────────────────────────── -->
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-md-6">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-white fw-bold">&#127939; 本周运动概览</div>
-        <div class="card-body">
-          <div class="mb-2">
-            <span class="text-muted">本周有效燃脂：</span>
-            <strong th:text="${d.weeklyFatBurnMin} + ' 分钟'"></strong>
-            <span th:if="${d.weeklyFatBurnMin >= 150}" class="badge bg-success ms-2">&#10003; 达标</span>
-            <span th:unless="${d.weeklyFatBurnMin >= 150}" class="badge bg-warning text-dark ms-2"
-                  th:text="'还差 ' + (150 - ${d.weeklyFatBurnMin}) + ' 分'"></span>
-          </div>
-          <div th:if="${d.recentExercise.isEmpty()}" class="text-muted small">本周暂无运动记录</div>
-          <ul class="list-group list-group-flush" th:unless="${d.recentExercise.isEmpty()}">
-            <li th:each="e : ${d.recentExercise}" class="list-group-item px-0 py-1 d-flex justify-content-between">
-              <span>
-                <span th:text="${e.exerciseDate}"></span>
-                <span th:if="${e.exerciseType}" class="badge bg-light text-dark ms-1" th:text="${e.exerciseType}"></span>
-              </span>
-              <span>
-                <span th:text="${e.durationMin} + '分钟'"></span>
-                <span th:if="${e.fatBurnMin != null and e.fatBurnMin > 0}"
-                      class="badge bg-warning text-dark ms-1" th:text="'燃脂 ' + ${e.fatBurnMin} + '分'"></span>
-              </span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- 快速操作 -->
-    <div class="col-12 col-md-6">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-white fw-bold">&#9889; 快速操作</div>
-        <div class="card-body d-grid gap-2">
-          <a th:href="@{/water}" class="btn btn-outline-info">&#128167; 记录饮水</a>
-          <a th:href="@{/exercise}" class="btn btn-outline-warning">&#127939; 记录运动</a>
-          <a th:href="@{/metrics}" class="btn btn-outline-primary">&#128203; 录入指标</a>
-          <a th:href="@{/meals}" class="btn btn-outline-success">&#127869; 生成今日食谱</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── 果糖预警 ────────────────────────────────────────────────── -->
-  <div th:if="${d.uricAcidBudget.fructoseWarning}"
-       class="alert alert-warning d-flex align-items-center">
-    &#9888;&#65039; <strong class="ms-2">果糖摄入预警：</strong>
-    <span class="ms-1">今日果糖已达
-      <strong th:text="${#numbers.formatDecimal(d.uricAcidBudget.fructoseTotalG,1,1)} + 'g'"></strong>
-      （建议 &lt;25g/天），果糖会促进尿酸合成，请减少水果摄入。
-    </span>
+    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #34c759, #30d158); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;" th:text="${pet.avatar}"></div>
   </div>
 </div>
 
+<th:block th:if="${lateNightMode}">
+  <div class="late-night-banner">
+    <div class="message" th:text="${lateNightMessage}"></div>
+  </div>
+</th:block>
+
+<div class="pet-scene">
+  <div class="pet-name-tag">
+    <span th:text="${pet.name}">猪皮</span>
+    <span class="pet-level-badge" th:text="'Lv.' + ${pet.level}">Lv.1</span>
+  </div>
+  <div id="petCharacter" class="pet-character" th:classappend="${isDead} ? 'pet-dead' : ''">
+    <div class="zhupi-cat">
+      <div class="cat-body">
+        <div class="cat-body-white"></div>
+        <div class="cat-patch cat-patch-back"></div>
+        <div class="cat-patch cat-patch-side"></div>
+      </div>
+      <div class="cat-head">
+        <div class="cat-head-white"></div>
+        <div class="cat-patch cat-patch-ear-left"></div>
+        <div class="cat-patch cat-patch-ear-right"></div>
+        <div class="cat-patch cat-patch-forehead"></div>
+        <div class="cat-eye cat-eye-left">
+          <div class="cat-pupil"></div>
+        </div>
+        <div class="cat-eye cat-eye-right">
+          <div class="cat-pupil"></div>
+        </div>
+        <div class="cat-nose"></div>
+        <div class="cat-mouth"></div>
+        <div class="cat-whisker cat-whisker-left-top"></div>
+        <div class="cat-whisker cat-whisker-left-bottom"></div>
+        <div class="cat-whisker cat-whisker-right-top"></div>
+        <div class="cat-whisker cat-whisker-right-bottom"></div>
+      </div>
+      <div class="cat-ear cat-ear-left"></div>
+      <div class="cat-ear cat-ear-right"></div>
+      <div class="cat-leg cat-leg-front-left"></div>
+      <div class="cat-leg cat-leg-front-right cat-leg-limp"></div>
+      <div class="cat-leg cat-leg-back-left"></div>
+      <div class="cat-leg cat-leg-back-right"></div>
+      <div class="cat-tail"></div>
+    </div>
+    <div class="pet-reaction" id="petReaction"></div>
+  </div>
+  <div class="pet-ground"></div>
+  <div th:if="${isDead}" class="pet-dead-overlay">
+    <div class="pet-dead-text">R.I.P</div>
+  </div>
+</div>
+
+<div class="card-pet" style="padding: 16px;">
+  <div th:if="${isDead}" class="text-center mb-3">
+    <div style="font-size: 14px; color: var(--apple-text-secondary); margin-bottom: 12px;">
+      💀 猪皮已经离开了...
+    </div>
+    <button class="btn btn-danger btn-lg" style="border-radius: 12px; padding: 12px 32px;" onclick="revivePet()">
+      <i class="fas fa-heart me-2"></i>复活猪皮
+    </button>
+  </div>
+
+  <div th:unless="${isDead}">
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <div style="font-size: 32px;" th:text="${pet.moodEmoji}">😺</div>
+      <div class="flex-grow-1">
+        <div class="pet-exp-bar mb-1">
+          <div class="pet-exp-fill" th:style="'width:' + (${pet.experience} * 100 / ${pet.maxExperience}) + '%'"></div>
+        </div>
+        <div style="font-size: 12px; color: var(--apple-text-secondary);">
+          经验 <span th:text="${pet.experience}">0</span> / <span th:text="${pet.maxExperience}">100</span>
+        </div>
+      </div>
+    </div>
+
+    <div th:if="${willDieInDays != null and willDieInDays le 2 and willDieInDays gt 0}" class="alert-warning mb-2" style="background: rgba(255,149,0,0.15); color: var(--apple-orange); padding: 8px 12px; border-radius: 10px; font-size: 13px;">
+      <i class="fas fa-exclamation-triangle me-1"></i>
+      <span th:text="'猪皮只剩 ' + ${willDieInDays} + ' 天就要离开了...快去记录喝水量和运动！'"></span>
+    </div>
+
+    <div class="pet-status mb-2">
+      <span class="pet-status-item" th:classappend="${pet.todayWaterComplete == 1} ? 'completed' : 'pending'">
+        <span th:text="${pet.todayWaterComplete == 1} ? '💧 完成' : '💧 未完成'">💧 未完成</span>
+      </span>
+      <span class="pet-status-item" th:classappend="${pet.todayExerciseComplete == 1} ? 'completed' : 'pending'">
+        <span th:text="${pet.todayExerciseComplete == 1} ? '🏃 完成' : '🏃 未完成'">🏃 未完成</span>
+      </span>
+    </div>
+    <div style="font-size: 13px; color: var(--apple-text-secondary); margin-bottom: 12px;" th:text="${petEncourage}"></div>
+  </div>
+
+  <div id="petResponse" class="mt-3" style="font-size: 13px; color: var(--apple-text-secondary); display: none;"></div>
+</div>
+
+<div style="padding: 0 20px;">
+  <div class="section-title">健康概览</div>
+  <div class="row g-3 mb-4">
+    <div class="col-6">
+      <div class="stat-card h-100">
+        <div class="stat-icon blue">💊</div>
+        <div class="stat-label">嘌呤预算</div>
+        <div class="stat-value" th:text="${#numbers.formatDecimal(d.uricAcidBudget.remainingMg,1,1)} + ' mg'">0 mg</div>
+        <div class="d-flex align-items-center gap-2 mt-2">
+          <div class="progress-circle">
+            <svg viewBox="0 0 36 36">
+              <circle class="bg" cx="18" cy="18" r="15.5"/>
+              <circle class="fg" cx="18" cy="18" r="15.5"
+                      th:attr="stroke-dasharray=${d.uricAcidBudget.progressPercent} + ', 100'"/>
+            </svg>
+            <span class="value" th:text="${d.uricAcidBudget.progressPercent} + '%'">0%</span>
+          </div>
+          <div style="font-size: 12px; color: var(--apple-text-secondary);">
+            已用 <span th:text="${#numbers.formatDecimal(d.uricAcidBudget.consumedMg,1,1)}">0</span>mg
+          </div>
+        </div>
+        <span class="badge mt-2" style="background: var(--apple-gray-2); color: var(--apple-text); font-size: 11px; font-weight: 500;"
+              th:text="${d.uricAcidBudget.status.label}"></span>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="stat-card h-100">
+        <div class="stat-icon cyan">💧</div>
+        <div class="stat-label">今日饮水</div>
+        <div class="stat-value" th:text="${d.todayWaterMl} + ' ml'">0 ml</div>
+        <div class="d-flex align-items-center gap-2 mt-2">
+          <div class="progress-circle">
+            <svg viewBox="0 0 36 36">
+              <circle class="bg" cx="18" cy="18" r="15.5"/>
+              <circle class="fg" cx="18" cy="18" r="15.5" style="stroke: #00c7d2;"
+                      th:attr="stroke-dasharray=${d.waterProgressPct} + ', 100'"/>
+            </svg>
+            <span class="value" th:text="${d.waterProgressPct} + '%'">0%</span>
+          </div>
+          <div style="font-size: 12px; color: var(--apple-text-secondary);">
+            目标 <span th:text="${d.waterGoalMl}">2500</span>ml
+          </div>
+        </div>
+        <span th:if="${d.waterProgressPct >= 100}" class="badge mt-2" style="background: var(--apple-green); color: white; font-size: 11px;">&#10003; 达标</span>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="stat-card h-100">
+        <div class="stat-icon green">🫁</div>
+        <div class="stat-label">脂肪肝评分</div>
+        <div th:if="${d.fattyLiverProgress.hasData}">
+          <div class="stat-value" th:text="${#numbers.formatDecimal(d.fattyLiverProgress.totalScore,1,1)} + ' 分'">0 分</div>
+          <div style="font-size: 12px; color: var(--apple-text-secondary);" th:text="${d.fattyLiverProgress.grade}"></div>
+        </div>
+        <div th:unless="${d.fattyLiverProgress.hasData}" style="color: var(--apple-text-secondary); font-size: 14px;">暂无数据</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="stat-card h-100">
+        <div class="stat-icon orange">⚖️</div>
+        <div class="stat-label">最新检测</div>
+        <div th:if="${d.latestMetrics != null}">
+          <div class="stat-value" th:if="${d.latestMetrics.weightKg != null}" th:text="${d.latestMetrics.weightKg} + ' kg'">0 kg</div>
+          <div style="font-size: 12px; color: var(--apple-text-secondary);" th:if="${d.latestMetrics.uricAcid != null}">
+            尿酸 <span th:text="${d.latestMetrics.uricAcid}">0</span>
+            <span th:if="${d.latestMetrics.uricAcid > 420}" style="color: var(--apple-red);">↑</span>
+            <span th:unless="${d.latestMetrics.uricAcid > 420}" style="color: var(--apple-green);">✓</span>
+          </div>
+        </div>
+        <div th:unless="${d.latestMetrics != null}" style="color: var(--apple-text-secondary); font-size: 14px;">暂无数据</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">快速操作</div>
+  <div class="row g-3 mb-4">
+    <div class="col-3">
+      <a th:href="@{/water}" class="quick-action">
+        <i style="background: rgba(0,199,210,0.12); color: #00c7d2;">💧</i>
+        <span>饮水</span>
+      </a>
+    </div>
+    <div class="col-3">
+      <a th:href="@{/exercise}" class="quick-action">
+        <i style="background: rgba(255,149,0,0.12); color: var(--apple-orange);">🏃</i>
+        <span>运动</span>
+      </a>
+    </div>
+    <div class="col-3">
+      <a th:href="@{/metrics}" class="quick-action">
+        <i style="background: rgba(0,113,227,0.12); color: var(--apple-blue);">📊</i>
+        <span>指标</span>
+      </a>
+    </div>
+    <div class="col-3">
+      <a th:href="@{/meals}" class="quick-action">
+        <i style="background: rgba(52,199,89,0.12); color: var(--apple-green);">🍽️</i>
+        <span>食谱</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="section-title">本周运动</div>
+  <div class="card-apple p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span style="font-weight: 600;">本周燃脂</span>
+      <span style="color: var(--apple-orange); font-weight: 600;" th:text="${d.weeklyFatBurnMin} + ' 分钟'">0 分钟</span>
+    </div>
+    <div th:if="${d.recentExercise.isEmpty()}" style="color: var(--apple-text-secondary); font-size: 14px; text-align: center; padding: 20px;">
+      暂无运动记录，开始动起来吧！
+    </div>
+    <div th:unless="${d.recentExercise.isEmpty()}">
+      <div th:each="e : ${d.recentExercise}" class="exercise-item">
+        <div class="exercise-icon">
+          <i class="fas fa-running"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between">
+            <span style="font-weight: 500;" th:text="${e.exerciseType != null} ? ${e.exerciseType} : '运动'">运动</span>
+            <span style="color: var(--apple-text-secondary); font-size: 13px;" th:text="${e.exerciseDate}">日期</span>
+          </div>
+          <div style="font-size: 12px; color: var(--apple-text-secondary);">
+            <span th:text="${e.durationMin} + ' 分钟'">0 分钟</span>
+            <span th:if="${e.fatBurnMin != null and e.fatBurnMin > 0}" class="exercise-badge" style="background: rgba(255,149,0,0.12); color: var(--apple-orange);" th:text="'燃脂 ' + ${e.fatBurnMin} + '分'">燃脂 0分</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-bottom">
+  <a th:href="@{/}" th:classappend="${currentPage == 'dashboard'} ? 'active'">
+    <i class="fas fa-home"></i>
+    <span>首页</span>
+  </a>
+  <a th:href="@{/metrics}" th:classappend="${currentPage == 'metrics'} ? 'active'">
+    <i class="fas fa-chart-line"></i>
+    <span>指标</span>
+  </a>
+  <a th:href="@{/water}" th:classappend="${currentPage == 'water'} ? 'active'">
+    <i class="fas fa-tint"></i>
+    <span>饮水</span>
+  </a>
+  <a th:href="@{/exercise}" th:classappend="${currentPage == 'exercise'} ? 'active'">
+    <i class="fas fa-heartbeat"></i>
+    <span>运动</span>
+  </a>
+  <a th:href="@{/achievements}" th:classappend="${currentPage == 'achievements'} ? 'active'">
+    <i class="fas fa-trophy"></i>
+    <span>成就</span>
+  </a>
+</div>
+
+<div th:if="${celebration != null}" class="modal fade modal-apple" id="celebrationModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4">
+      <div style="font-size: 5rem; animation: bounce 0.5s ease infinite alternate;" th:text="${celebration.icon}">🎉</div>
+      <h3 class="mt-3 fw-bold" style="color: var(--apple-green);" th:text="${celebration.message}"></h3>
+      <p style="color: var(--apple-text-secondary);" th:text="${celebration.name}"></p>
+      <button type="button" class="btn btn-apple btn-apple-primary mt-3" data-bs-dismiss="modal">太棒了！</button>
+    </div>
+  </div>
+</div>
+
+<div th:if="${surprise != null}" class="modal fade modal-apple" id="surpriseModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4">
+      <div style="font-size: 3rem;">💡</div>
+      <h5 class="mt-2 fw-bold" th:text="${surprise.message}"></h5>
+      <button type="button" class="btn btn-apple btn-apple-primary mt-3" style="background: var(--apple-gray-2); color: var(--apple-text);" data-bs-dismiss="modal">收到！</button>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes bounce {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-10px) scale(1.1); }
+}
+</style>
+
+<script th:if="${celebration != null}">
+document.addEventListener('DOMContentLoaded', function() {
+  var modal = new bootstrap.Modal(document.getElementById('celebrationModal'));
+  modal.show();
+});
+</script>
+<script th:if="${surprise != null}">
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    var modal = new bootstrap.Modal(document.getElementById('surpriseModal'));
+    modal.show();
+  }, 1500);
+});
+</script>
+<script th:if="${lateNightMode}">
+document.addEventListener('DOMContentLoaded', function() {
+  var starsContainer = document.getElementById('stars');
+  if (starsContainer) {
+    for (var i = 0; i < 50; i++) {
+      var star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 2 + 's';
+      star.style.animationDuration = (1 + Math.random() * 2) + 's';
+      starsContainer.appendChild(star);
+    }
+  }
+});
+</script>
+<script>
+var idleTimeout = null;
+
+function revivePet() {
+  fetch('/pet/revive', { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'alive') {
+        location.reload();
+      }
+    });
+}
+
+function startIdleWalk() {
+  var character = document.getElementById('petCharacter');
+  if (!character || character.classList.contains('pet-dead')) return;
+
+  var positions = ['20%', '35%', '50%', '65%', '80%'];
+  var currentIndex = 2;
+
+  function walkToNext() {
+    var charEl = document.getElementById('petCharacter');
+    if (!charEl || charEl.classList.contains('pet-dead')) return;
+
+    charEl.className = 'pet-character pet-walking';
+    currentIndex = (currentIndex + 1) % positions.length;
+    charEl.style.left = positions[currentIndex];
+
+    setTimeout(function() {
+      var el = document.getElementById('petCharacter');
+      if (el && el.classList.contains('pet-walking')) {
+        el.className = 'pet-character';
+      }
+    }, 1500);
+
+    var delay = 4000 + Math.random() * 4000;
+    idleTimeout = setTimeout(walkToNext, delay);
+  }
+
+  idleTimeout = setTimeout(walkToNext, 5000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  startIdleWalk();
+});
+</script>
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.pet-exp-bar {
+  height: 6px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.pet-exp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #34c759, #30d158);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+.pet-status {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+.pet-status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pet-status-item.completed { color: var(--apple-green); }
+.pet-status-item.pending { color: var(--apple-text-secondary); }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

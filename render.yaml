@@ -22,3 +22,5 @@ services:
         value: org.hibernate.dialect.PostgreSQLDialect
       - key: FEISHU_WEBHOOK_URL
         sync: false
+      - key: PUSHPLUS_TOKEN
+        sync: false

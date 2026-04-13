@@ -30,7 +30,10 @@ spring:
 
 feishu:
   webhook:
-    url: ${FEISHU_WEBHOOK_URL:}   # leave blank to disable push
+    url: ${FEISHU_WEBHOOK_URL:}
+
+pushplus:
+  token: ${PUSHPLUS_TOKEN:}
 
 server:
   port: ${PORT:8080}
