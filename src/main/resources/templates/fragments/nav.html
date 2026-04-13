@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- ══ Navigation Bar ═══════════════════════════════════════════ -->
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-success sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" th:href="@{/}">&#9829; Health-Sync</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navMenu" aria-controls="navMenu"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" th:classappend="${currentPage == 'dashboard'} ? 'active'"
+             th:href="@{/}">&#128200; 仪表盘</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:classappend="${currentPage == 'metrics'} ? 'active'"
+             th:href="@{/metrics}">&#128203; 指标记录</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:classappend="${currentPage == 'meals'} ? 'active'"
+             th:href="@{/meals}">&#127869; 膳食管理</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:classappend="${currentPage == 'water'} ? 'active'"
+             th:href="@{/water}">&#128167; 饮水追踪</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:classappend="${currentPage == 'exercise'} ? 'active'"
+             th:href="@{/exercise}">&#127939; 运动日志</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ Flash Message ════════════════════════════════════════════ -->
+<div th:fragment="flash" class="container-fluid mt-2">
+  <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
+    <span th:text="${successMsg}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <span th:text="${errorMsg}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+</div>
+</body>
+</html>
