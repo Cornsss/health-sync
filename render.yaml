@@ -1,31 +1,24 @@
+databases:
+  - name: health-sync-db
+    plan: free
+    databaseName: healthsync
+
 services:
   - type: web
     name: health-sync
-    env: java
+    runtime: docker
     plan: free
-    buildCommand: "./mvnw clean package -DskipTests"
-    startCommand: "java -Dspring.profiles.active=prod -jar target/health-sync-1.0.0.jar"
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: DB_URL
-        fromDatabase:
-          name: health-sync-db
-          property: jdbcConnectionString
+        value: jdbc:postgresql://dpg-d7e7oafaqgkc7382bos0-a/health_sync_gclz
       - key: DB_USERNAME
-        fromDatabase:
-          name: health-sync-db
-          property: user
+        value: health_sync_gclz_user
       - key: DB_PASSWORD
-        fromDatabase:
-          name: health-sync-db
-          property: password
+        value: Jrk6IpN0aJyK8xnByaLXfZfl6Ju2yIeK
       - key: DB_DRIVER
         value: org.postgresql.Driver
       - key: DB_DIALECT
         value: org.hibernate.dialect.PostgreSQLDialect
       - key: FEISHU_WEBHOOK_URL
-        sync: false   # 手动在 Render Dashboard 填写
-
-databases:
-  - name: health-sync-db
-    plan: free
-    databaseName: healthsync
+        sync: false
