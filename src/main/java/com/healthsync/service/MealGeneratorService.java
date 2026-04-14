@@ -12,11 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class MealGeneratorService {
+
+    public enum Season { SPRING, SUMMER, AUTUMN, WINTER }
 
     private static final Map<String, Double> BUDGET_RATIO = Map.of(
             "BREAKFAST", 0.20, "LUNCH", 0.40, "DINNER", 0.30, "SNACK", 0.10);
@@ -39,9 +42,14 @@ public class MealGeneratorService {
         for (String mealType : List.of("BREAKFAST", "LUNCH", "DINNER", "SNACK")) {
             double mealBudget = totalBudget * BUDGET_RATIO.getOrDefault(mealType, 0.10);
             List<MealPlan> candidates = planRepo.findByMealTypeAndIsActiveTrue(mealType);
-            List<MealPlan> safe = candidates.stream()
+            Season currentSeason = getCurrentSeason();
+            List<MealPlan> seasonalCandidates = candidates.stream()
+                    .filter(p -> isFoodInSeason(p, currentSeason))
+                    .collect(Collectors.toList());
+            if (seasonalCandidates.isEmpty()) seasonalCandidates = candidates;
+            List<MealPlan> safe = seasonalCandidates.stream()
                     .filter(p -> calcPurine(p) <= mealBudget).collect(Collectors.toList());
-            if (safe.isEmpty()) safe = candidates;
+            if (safe.isEmpty()) safe = seasonalCandidates;
             if (safe.isEmpty()) continue;
 
             Collections.shuffle(safe);
@@ -76,6 +84,27 @@ public class MealGeneratorService {
     private double calcCal(MealPlan p)      { return p.getItems().stream().mapToDouble(MealPlanItem::getCalories).sum(); }
     private double calcFructose(MealPlan p) { return p.getItems().stream().mapToDouble(MealPlanItem::getFructoseG).sum(); }
     private double round1(double v)         { return Math.round(v * 10.0) / 10.0; }
+
+    private Season getCurrentSeason() {
+        Month month = LocalDate.now().getMonth();
+        if (month == Month.MARCH || month == Month.APRIL || month == Month.MAY) return Season.SPRING;
+        if (month == Month.JUNE || month == Month.JULY || month == Month.AUGUST) return Season.SUMMER;
+        if (month == Month.SEPTEMBER || month == Month.OCTOBER || month == Month.NOVEMBER) return Season.AUTUMN;
+        return Season.WINTER;
+    }
+
+    private boolean isFoodInSeason(MealPlan plan, Season currentSeason) {
+        for (MealPlanItem item : plan.getItems()) {
+            String seasons = item.getFood().getSeasons();
+            if (seasons == null || seasons.isEmpty() || seasons.contains("ALL")) {
+                return true;
+            }
+            if (seasons.contains(currentSeason.name())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private Map<String, Double> buildShoppingList(Map<String, MealPlan> plans) {
         Map<String, Double> list = new LinkedHashMap<>();

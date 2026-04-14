@@ -49,4 +49,8 @@ public class ExerciseService {
         Integer v = repository.sumFatBurnMinutesBetween(LocalDate.now().minusDays(6), LocalDate.now());
         return v != null ? v : 0;
     }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
 }

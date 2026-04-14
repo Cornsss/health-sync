@@ -395,8 +395,15 @@
     <div th:each="log : ${todayLogs}" class="log-card">
       <div class="log-header">
         <span class="log-type" th:text="${log.exerciseType ?: '运动'}"></span>
-        <span th:if="${log.fatBurnMin != null and log.fatBurnMin > 0}" class="fatburn-tag"
-              th:text="'燃脂 ' + ${log.fatBurnMin} + ' 分钟'"></span>
+        <div class="d-flex align-items-center gap-2">
+          <span th:if="${log.fatBurnMin != null and log.fatBurnMin > 0}" class="fatburn-tag"
+                th:text="'燃脂 ' + ${log.fatBurnMin} + ' 分钟'"></span>
+          <form th:action="@{/exercise/delete/{id}(id=${log.id})}" method="post">
+            <button type="submit" class="btn btn-sm" onclick="return confirm('确认删除？')" style="background:none;border:none;color:#ff3b30;padding:4px;">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </form>
+        </div>
       </div>
       <div>
         <span class="log-duration" th:text="${log.durationMin}"></span>

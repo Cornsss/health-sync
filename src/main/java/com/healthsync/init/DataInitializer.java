@@ -83,8 +83,8 @@ public class DataInitializer {
         m.put("苹果",  f("苹果",  "水果", 0.9, 0.2, 10.0, 52));
         m.put("梨",    f("梨",    "水果", 1.1, 0.1,  6.0, 57));
         m.put("蓝莓",  f("蓝莓",  "水果", 2.0, 0.3,  3.5, 57));
-        m.put("樱桃",  f("樱桃",  "水果", 7.0, 0.2,  6.0, 50));
-        m.put("草莓",  f("草莓",  "水果", 4.0, 0.3,  3.0, 33));
+        m.put("樱桃",  f("樱桃",  "水果", 7.0, 0.2,  6.0, 50, "SPRING,SUMMER"));
+        m.put("草莓",  f("草莓",  "水果", 4.0, 0.3,  3.0, 33, "SPRING"));
         // 调料/汤底
         m.put("海带",  f("海带",  "蔬菜",  8, 0.1, 0.0,  12));
         m.put("紫菜",  f("紫菜",  "蔬菜",  12, 0.3, 0.0,  35));
@@ -143,19 +143,19 @@ public class DataInitializer {
         m.put("蛤蜊", f("蛤蜊", "蛋白质", 65, 0.5, 0.0, 62));
         m.put("蛏子", f("蛏子", "蛋白质", 70, 0.6, 0.0, 76));
         m.put("生蚝", f("生蚝", "蛋白质", 55, 0.5, 0.0, 57));
-        m.put("牛油果", f("牛油果", "水果", 4, 0.3, 1.5, 160));
-        m.put("火龙果", f("火龙果", "水果", 3, 0.2, 5.0, 50));
-        m.put("猕猴桃", f("猕猴桃", "水果", 3, 0.2, 6.0, 59));
-        m.put("柚子", f("柚子", "水果", 2, 0.1, 4.0, 42));
-        m.put("橙子", f("橙子", "水果", 3, 0.2, 5.0, 47));
-        m.put("橘子", f("橘子", "水果", 2, 0.1, 4.5, 43));
-        m.put("香蕉", f("香蕉", "水果", 5, 0.2, 7.0, 93));
-        m.put("葡萄", f("葡萄", "水果", 6, 0.2, 8.0, 44));
-        m.put("西瓜", f("西瓜", "水果", 2, 0.1, 4.0, 30));
-        m.put("哈密瓜", f("哈密瓜", "水果", 3, 0.1, 4.0, 34));
-        m.put("椰子", f("椰子", "水果", 4, 0.2, 2.5, 231));
-        m.put("无花果", f("无花果", "水果", 8, 0.3, 3.0, 74));
-        m.put("石榴", f("石榴", "水果", 5, 0.2, 8.0, 63));
+        m.put("牛油果", f("牛油果", "水果", 4, 0.3, 1.5, 160, "ALL"));
+        m.put("火龙果", f("火龙果", "水果", 3, 0.2, 5.0, 50, "SUMMER,AUTUMN"));
+        m.put("猕猴桃", f("猕猴桃", "水果", 3, 0.2, 6.0, 59, "AUTUMN,WINTER"));
+        m.put("柚子", f("柚子", "水果", 2, 0.1, 4.0, 42, "AUTUMN"));
+        m.put("橙子", f("橙子", "水果", 3, 0.2, 5.0, 47, "WINTER"));
+        m.put("橘子", f("橘子", "水果", 2, 0.1, 4.5, 43, "AUTUMN,WINTER"));
+        m.put("香蕉", f("香蕉", "水果", 5, 0.2, 7.0, 93, "ALL"));
+        m.put("葡萄", f("葡萄", "水果", 6, 0.2, 8.0, 44, "SUMMER,AUTUMN"));
+        m.put("西瓜", f("西瓜", "水果", 2, 0.1, 4.0, 30, "SUMMER"));
+        m.put("哈密瓜", f("哈密瓜", "水果", 3, 0.1, 4.0, 34, "SUMMER,AUTUMN"));
+        m.put("椰子", f("椰子", "水果", 4, 0.2, 2.5, 231, "SUMMER"));
+        m.put("无花果", f("无花果", "水果", 8, 0.3, 3.0, 74, "SUMMER,AUTUMN"));
+        m.put("石榴", f("石榴", "水果", 5, 0.2, 8.0, 63, "AUTUMN"));
         m.put("腰果", f("腰果", "坚果", 35, 1.8, 0.0, 165));
         m.put("开心果", f("开心果", "坚果", 28, 1.2, 0.0, 159));
         m.put("榛子", f("榛子", "坚果", 32, 1.5, 0.0, 175));
@@ -890,12 +890,17 @@ public class DataInitializer {
     }
 
     private FoodLibrary f(String name, String cat, double purine, double fat, double fructose, double cal) {
+        return f(name, cat, purine, fat, fructose, cal, null);
+    }
+
+    private FoodLibrary f(String name, String cat, double purine, double fat, double fructose, double cal, String seasons) {
         FoodLibrary food = new FoodLibrary();
         food.setName(name); food.setCategory(cat);
         food.setPurinePerHundredG(BigDecimal.valueOf(purine));
         food.setFatPerHundredG(BigDecimal.valueOf(fat));
         food.setFructosePerHundredG(BigDecimal.valueOf(fructose));
         food.setCaloriesPerHundredG(BigDecimal.valueOf(cal));
+        food.setSeasons(seasons);
         return food;
     }
 }

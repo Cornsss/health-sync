@@ -49,4 +49,8 @@ public class WaterTrackingService {
     public List<Object[]> getWeeklyStats() {
         return repository.findDailySumBetween(LocalDate.now().minusDays(6), LocalDate.now());
     }
+
+    public void deleteLog(Long id) {
+        repository.deleteById(id);
+    }
 }

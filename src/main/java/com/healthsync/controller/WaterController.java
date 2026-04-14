@@ -62,4 +62,12 @@ public class WaterController {
         attrs.addFlashAttribute("successMsg", "已记录 " + amountMl + " ml 饮水！");
         return "redirect:/water";
     }
+
+    @PostMapping("/delete/{id}")
+    public String deleteLog(@PathVariable Long id, RedirectAttributes attrs) {
+        service.deleteLog(id);
+        feishu.updateWaterCache(service.getTodayTotal());
+        attrs.addFlashAttribute("successMsg", "已删除饮水记录");
+        return "redirect:/water";
+    }
 }

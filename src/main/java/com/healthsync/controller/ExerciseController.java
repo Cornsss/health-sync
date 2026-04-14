@@ -63,4 +63,11 @@ public class ExerciseController {
         attrs.addFlashAttribute("successMsg", "运动记录已保存！");
         return "redirect:/exercise";
     }
+
+    @PostMapping("/delete/{id}")
+    public String deleteLog(@PathVariable Long id, RedirectAttributes attrs) {
+        exerciseService.delete(id);
+        attrs.addFlashAttribute("successMsg", "已删除运动记录");
+        return "redirect:/exercise";
+    }
 }

@@ -29,6 +29,8 @@ public class FoodLibrary {
     @Column(columnDefinition = "TEXT")
     private String note;
 
+    private String seasons;
+
     public FoodLibrary() {}
 
     @Transient
@@ -59,4 +61,6 @@ public class FoodLibrary {
     public void setAllowedForUricAcid(Boolean v) { this.allowedForUricAcid = v; }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
+    public String getSeasons() { return seasons; }
+    public void setSeasons(String seasons) { this.seasons = seasons; }
 }
